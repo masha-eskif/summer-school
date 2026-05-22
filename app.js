@@ -460,8 +460,39 @@ function renderSailing() {
 /* ============ Вкладка «Математика» ============ */
 
 let openMathWeeks = new Set([1]);
+let openTextbookChapters = new Set([1]);
 
 function renderMath() {
+  const T = window.TEXTBOOK;
+  const textbookHtml = T ? `
+    <div class="card">
+      <h2>📕 Шаблоны решений из учебника</h2>
+      <p style="color:var(--muted); margin:0 0 0.6rem;">${T.source}. Краткие шаблоны типовых задач: пример → метод → решение. Раскрой главу, чтобы посмотреть.</p>
+      ${T.chapters.map(ch => {
+        const isOpen = openTextbookChapters.has(ch.num);
+        return `
+          <div class="sailing-cat ${isOpen ? 'open' : ''}" data-tbch="${ch.num}">
+            <div class="sailing-cat-head">
+              <span>Глава ${ch.num}: ${ch.title} <small style="color:var(--muted); font-weight:normal;">· стр. ${ch.pages}</small></span>
+              <span>${isOpen ? '▼' : '▶'}</span>
+            </div>
+            <div class="sailing-cat-body">
+              <p style="margin:0.3rem 0 0.6rem; font-style:italic; color:var(--muted);">${ch.summary}</p>
+              ${ch.patterns.map(p => `
+                <div class="sailing-lesson">
+                  <h4>📌 ${p.title}</h4>
+                  <div style="margin:0.3rem 0;"><strong>Пример:</strong> ${p.example}</div>
+                  <div style="margin:0.3rem 0;"><strong>Как решаем:</strong> ${p.method}</div>
+                  <div style="margin:0.3rem 0; padding:0.4rem 0.6rem; background:#eef7f0; border-left:3px solid #3aa6b9; border-radius:4px;"><strong>Решение:</strong> ${p.solution}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  ` : '';
+
   const weeksHtml = PROGRAM.weeks.map(week => {
     const isOpen = openMathWeeks.has(week.number);
     const mathDays = week.days.filter(d => d.subject === 'math');
@@ -495,12 +526,23 @@ function renderMath() {
   }).join('');
 
   document.getElementById('view').innerHTML = `
+    ${textbookHtml}
     <div class="card">
-      <h2>📐 Математика</h2>
-      <p style="color:var(--muted); margin:0 0 0.6rem;">Все 24 математических дня курса (Вт и Чт). Открывай неделю, читай теорию, тренируйся в любом порядке. Учебник: задачник 57 школы (геометрия, алгебра 8 кл).</p>
+      <h2>📐 Математика — программа курса</h2>
+      <p style="color:var(--muted); margin:0 0 0.6rem;">Все 24 математических дня (Вт и Чт каждой недели). Тренируйся в любом порядке. Сверху — шаблоны из учебника, если забыла как решается тот или иной тип.</p>
       ${weeksHtml}
     </div>
   `;
+
+  document.querySelectorAll('[data-tbch]').forEach(div => {
+    const head = div.querySelector('.sailing-cat-head');
+    if (head) head.onclick = () => {
+      const n = Number(div.dataset.tbch);
+      if (openTextbookChapters.has(n)) openTextbookChapters.delete(n);
+      else openTextbookChapters.add(n);
+      renderMath();
+    };
+  });
 
   document.querySelectorAll('[data-mweek]').forEach(div => {
     const head = div.querySelector('.sailing-cat-head');
