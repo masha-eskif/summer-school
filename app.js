@@ -165,11 +165,13 @@ function gradeFromPercent(percent) {
 
 /* ============ Рендер: вкладки ============ */
 
-const TABS = ['today', 'sailing', 'informatics', 'diary', 'progress', 'settings'];
+const TABS = ['today', 'math', 'russian', 'informatics', 'sailing', 'diary', 'progress', 'settings'];
 const TAB_LABELS = {
   today: '📚 Сегодня',
-  sailing: '⛵ Парус',
+  math: '📐 Математика',
+  russian: '📝 Русский',
   informatics: '💻 Информатика',
+  sailing: '⛵ Парус',
   diary: '📓 Дневник',
   progress: '📈 Прогресс',
   settings: '⚙️ Настройки'
@@ -451,6 +453,163 @@ function renderSailing() {
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}</div>`;
+    };
+  });
+}
+
+/* ============ Вкладка «Математика» ============ */
+
+let openMathWeeks = new Set([1]);
+
+function renderMath() {
+  const weeksHtml = PROGRAM.weeks.map(week => {
+    const isOpen = openMathWeeks.has(week.number);
+    const mathDays = week.days.filter(d => d.subject === 'math');
+    if (mathDays.length === 0) return '';
+    return `
+      <div class="sailing-cat ${isOpen ? 'open' : ''}" data-mweek="${week.number}">
+        <div class="sailing-cat-head">
+          <span>Неделя ${week.number}: ${week.theme}</span>
+          <span>${isOpen ? '▼' : '▶'}</span>
+        </div>
+        <div class="sailing-cat-body">
+          ${mathDays.map(d => `
+            <div class="sailing-lesson">
+              <h4>${d.weekday}: ${d.topic}</h4>
+              <div class="theory">${d.theory}</div>
+              <div style="font-size:0.85rem; color:var(--muted); margin-top:0.4rem;">📖 ${d.reference || ''}</div>
+              <br><a class="video-btn" href="${d.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
+              ${d.problems.map((p, j) => `
+                <div class="problem" data-mw="${week.number}" data-md="${d.dayNum}" data-pidx="${j}">
+                  <div class="q">${p.q}</div>
+                  ${renderProblemInput(p, `math-w${week.number}-d${d.dayNum}-p${j}`)}
+                  <button class="secondary check-math-btn" data-mw="${week.number}" data-md="${d.dayNum}" data-pidx="${j}">Проверить</button>
+                  <div class="feedback-area"></div>
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('view').innerHTML = `
+    <div class="card">
+      <h2>📐 Математика</h2>
+      <p style="color:var(--muted); margin:0 0 0.6rem;">Все 24 математических дня курса (Вт и Чт). Открывай неделю, читай теорию, тренируйся в любом порядке. Учебник: задачник 57 школы (геометрия, алгебра 8 кл).</p>
+      ${weeksHtml}
+    </div>
+  `;
+
+  document.querySelectorAll('[data-mweek]').forEach(div => {
+    const head = div.querySelector('.sailing-cat-head');
+    if (head) head.onclick = () => {
+      const n = Number(div.dataset.mweek);
+      if (openMathWeeks.has(n)) openMathWeeks.delete(n);
+      else openMathWeeks.add(n);
+      renderMath();
+    };
+  });
+
+  document.querySelectorAll('.check-math-btn').forEach(btn => {
+    btn.onclick = () => {
+      const mw = Number(btn.dataset.mw);
+      const md = Number(btn.dataset.md);
+      const pidx = Number(btn.dataset.pidx);
+      const week = PROGRAM.weeks[mw - 1];
+      const day = week.days.find(x => x.dayNum === md);
+      const p = day.problems[pidx];
+      const value = getProblemValue(p, `math-w${mw}-d${md}-p${pidx}`);
+      const ok = checkAnswer(p, value);
+      const parent = btn.closest('.problem');
+      parent.classList.remove('correct', 'wrong');
+      parent.classList.add(ok ? 'correct' : 'wrong');
+      parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
+    };
+  });
+}
+
+/* ============ Вкладка «Русский язык» ============ */
+
+let openRussianWeeks = new Set([1]);
+
+function renderRussian() {
+  const R = window.RUSSIAN;
+
+  const linksHtml = R.externalLinks.map(l => `
+    <a class="video-btn" href="${l.url}" target="_blank" rel="noopener" style="display:block; text-align:left;">
+      <strong>${l.name}</strong><br><small style="opacity:0.9;">${l.desc}</small>
+    </a>
+  `).join('');
+
+  const weeksHtml = R.weeks.map(w => {
+    const isOpen = openRussianWeeks.has(w.week);
+    return `
+      <div class="sailing-cat ${isOpen ? 'open' : ''}" data-rweek="${w.week}">
+        <div class="sailing-cat-head">
+          <span>Неделя ${w.week}: ${w.topic}</span>
+          <span>${isOpen ? '▼' : '▶'}</span>
+        </div>
+        <div class="sailing-cat-body">
+          ${w.examTask ? `<div style="font-size:0.85rem; color:var(--muted); margin:0 0 0.4rem;">📝 ${w.examTask}</div>` : ''}
+          <div class="theory">${w.theory}</div>
+          <div style="font-size:0.85rem; color:var(--muted); margin-top:0.4rem;">📖 ${w.reference}</div>
+          <br><a class="video-btn" href="${w.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
+          ${w.problems.map((p, j) => `
+            <div class="problem" data-rw="${w.week}" data-pidx="${j}">
+              <div class="q">${p.q}</div>
+              ${renderProblemInput(p, `rus-w${w.week}-p${j}`)}
+              <button class="secondary check-rus-btn" data-rw="${w.week}" data-pidx="${j}">Проверить</button>
+              <div class="feedback-area"></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('view').innerHTML = `
+    <div class="card">
+      <h2>📝 Русский язык — подготовка к ОГЭ</h2>
+      <p style="color:var(--muted); margin:0 0 0.4rem;">⏰ ${R.schedule.label}</p>
+      <div style="background:#f4f8fc; border-radius:8px; padding:0.7rem; margin-bottom:0.9rem; font-size:0.92rem;">
+        <strong>Об экзамене:</strong> ${R.examInfo.structure}<br>
+        <strong>Время:</strong> ${R.examInfo.duration} · <strong>Заданий:</strong> ${R.examInfo.totalTasks} · <strong>Порог:</strong> ${R.examInfo.passing}
+      </div>
+      ${weeksHtml}
+    </div>
+    <div class="card">
+      <h2>🌐 Решу ОГЭ и другие ресурсы</h2>
+      <p style="color:var(--muted); margin:0 0 0.7rem;">В начале каждого занятия открой «Случайный вариант» — это даёт свежие задачи. Отмечай в дневнике, какие номера сделала с ошибкой; потом мы добавим автоматический повтор именно тех типов, где спотыкаешься.</p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.6rem;">
+        ${linksHtml}
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('[data-rweek]').forEach(div => {
+    const head = div.querySelector('.sailing-cat-head');
+    if (head) head.onclick = () => {
+      const n = Number(div.dataset.rweek);
+      if (openRussianWeeks.has(n)) openRussianWeeks.delete(n);
+      else openRussianWeeks.add(n);
+      renderRussian();
+    };
+  });
+
+  document.querySelectorAll('.check-rus-btn').forEach(btn => {
+    btn.onclick = () => {
+      const wk = Number(btn.dataset.rw);
+      const pidx = Number(btn.dataset.pidx);
+      const week = window.RUSSIAN.weeks.find(w => w.week === wk);
+      const p = week.problems[pidx];
+      const value = getProblemValue(p, `rus-w${wk}-p${pidx}`);
+      const ok = checkAnswer(p, value);
+      const parent = btn.closest('.problem');
+      parent.classList.remove('correct', 'wrong');
+      parent.classList.add(ok ? 'correct' : 'wrong');
+      parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
     };
   });
 }
@@ -845,8 +1004,10 @@ function render() {
   renderHeader();
   renderTabs();
   if (currentTab === 'today')       renderToday();
-  if (currentTab === 'sailing')     renderSailing();
+  if (currentTab === 'math')        renderMath();
+  if (currentTab === 'russian')     renderRussian();
   if (currentTab === 'informatics') renderInformatics();
+  if (currentTab === 'sailing')     renderSailing();
   if (currentTab === 'diary')       renderDiary();
   if (currentTab === 'progress')    renderProgress();
   if (currentTab === 'settings')    renderSettings();
