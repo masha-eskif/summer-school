@@ -11,8 +11,13 @@ const DEFAULT_STATE = {
   problemsPerDay: 3,                       // настраиваемое
   history: [],                             // [{date, dayKey, week, dayNum, subject, topic, grade, percent, bonusType, bonusText}]
   todayAnswers: {},                        // {dayKey: {idx: {value, correct}}}
-  viewedDayKey: null                       // какой день показывать в табе «Сегодня»
+  viewedDayKey: null,                      // какой день показывать в табе «Сегодня»
+  problemHistory: {}                       // {pid: [{date, ok}]} — для адаптивного повторения
 };
+
+const STREAK_PAUSE = 3;                    // правильных подряд → пауза
+const PAUSE_DAYS = 7;                      // длительность паузы в днях
+const MAX_REPEAT_PROBLEMS = 5;             // сколько максимум показывать в «На повторение»
 
 let state = loadState();
 
@@ -109,7 +114,8 @@ function getReviewProblems(currentKey) {
     const day = PROGRAM.weeks[pw]?.days.find(x => x.dayNum === pd);
     if (day && day.problems && day.problems.length > 0) {
       // Берём первую задачу
-      picks.push({ fromTopic: day.topic, fromDate: `Неделя ${pw + 1}, день ${pd}`, problem: day.problems[0] });
+      const pid = `prog.${day.subject}.w${pw + 1}.d${pd}.p0`;
+      picks.push({ fromTopic: day.topic, fromDate: `Неделя ${pw + 1}, день ${pd}`, problem: day.problems[0], pid });
     }
   }
   return picks;
@@ -161,6 +167,93 @@ function gradeFromPercent(percent) {
   if (percent >= 70) return 4;
   if (percent >= 50) return 3;
   return 2;
+}
+
+/* ============ Адаптивное повторение ============ */
+
+function recordProblemResult(pid, ok) {
+  if (!pid) return;
+  if (!state.problemHistory) state.problemHistory = {};
+  if (!state.problemHistory[pid]) state.problemHistory[pid] = [];
+  state.problemHistory[pid].push({ date: isoDate(new Date()), ok: !!ok });
+  if (state.problemHistory[pid].length > 12) {
+    state.problemHistory[pid] = state.problemHistory[pid].slice(-12);
+  }
+  saveState();
+}
+
+function getProblemStatus(pid) {
+  const h = (state.problemHistory && state.problemHistory[pid]) || [];
+  if (h.length === 0) return { hasHistory: false, due: false, streak: 0, lastDate: null, lastOk: null, daysSince: null };
+  const last = h[h.length - 1];
+  let streak = 0;
+  for (let i = h.length - 1; i >= 0; i--) {
+    if (h[i].ok) streak++;
+    else break;
+  }
+  const today = todayDate();
+  const lastD = parseISO(last.date);
+  const daysSince = Math.floor((today - lastD) / 86400000);
+  let due;
+  if (!last.ok) due = true;                                    // ошиблась → всегда возвращаем
+  else if (streak >= STREAK_PAUSE) due = (daysSince >= PAUSE_DAYS); // 3+ подряд → пауза 7 дней
+  else due = (daysSince >= 1);                                 // ещё учим — каждый день
+  return { hasHistory: true, due, streak, lastDate: last.date, lastOk: last.ok, daysSince };
+}
+
+function getProblemByPid(pid) {
+  if (!pid) return null;
+  let m;
+  if ((m = pid.match(/^prog\.(physics|math)\.w(\d+)\.d(\d+)\.p(\d+)$/))) {
+    const week = PROGRAM.weeks[Number(m[2]) - 1];
+    if (!week) return null;
+    const day = week.days.find(d => d.dayNum === Number(m[3]));
+    if (!day || !day.problems) return null;
+    const p = day.problems[Number(m[4])];
+    if (!p) return null;
+    return { problem: p, sourceTopic: day.topic, badge: m[1] === 'physics' ? '⚡ Физика' : '📐 Математика' };
+  }
+  if ((m = pid.match(/^sail\.([^.]+)\.p(\d+)$/))) {
+    const cat = SAILING.categories.find(c => c.id === m[1]);
+    if (!cat) return null;
+    const p = cat.test[Number(m[2])];
+    if (!p) return null;
+    return { problem: p, sourceTopic: cat.name, badge: '⛵ Парус' };
+  }
+  if ((m = pid.match(/^inf\.([^.]+)\.w(\d+)\.p(\d+)$/))) {
+    const track = window.INFORMATICS && window.INFORMATICS.tracks[m[1]];
+    if (!track) return null;
+    const week = track.weeks.find(w => w.week === Number(m[2]));
+    if (!week) return null;
+    const p = week.problems[Number(m[3])];
+    if (!p) return null;
+    return { problem: p, sourceTopic: week.topic, badge: m[1] === 'oge' ? '💻 ОГЭ Инф.' : '🐍 Python' };
+  }
+  if ((m = pid.match(/^rus\.w(\d+)\.p(\d+)$/))) {
+    const week = window.RUSSIAN && window.RUSSIAN.weeks.find(w => w.week === Number(m[1]));
+    if (!week) return null;
+    const p = week.problems[Number(m[2])];
+    if (!p) return null;
+    return { problem: p, sourceTopic: week.topic, badge: '📝 Русский' };
+  }
+  return null;
+}
+
+function getDueRepeatProblems(maxN) {
+  if (!state.problemHistory) return [];
+  const due = [];
+  Object.keys(state.problemHistory).forEach(pid => {
+    const status = getProblemStatus(pid);
+    if (!status.due) return;
+    const info = getProblemByPid(pid);
+    if (!info) return;
+    due.push({ pid, ...info, status });
+  });
+  due.sort((a, b) => {
+    if (a.status.lastOk !== b.status.lastOk) return a.status.lastOk ? 1 : -1; // ошибки в начале
+    return (a.status.lastDate || '').localeCompare(b.status.lastDate || '');     // старые в начале
+  });
+  return due.slice(0, maxN);
 }
 
 /* ============ Рендер: вкладки ============ */
@@ -227,8 +320,26 @@ function renderToday() {
   const nextKey = linear < PROGRAM.weeks.length * 5 - 1 ? `w${Math.floor((linear + 1) / 5) + 1}d${((linear + 1) % 5) + 1}` : null;
 
   const problemsToShow = day.problems.slice(0, state.problemsPerDay);
+  const dueProblems = getDueRepeatProblems(MAX_REPEAT_PROBLEMS);
+
+  const repeatHtml = dueProblems.length > 0 ? `
+    <div class="card">
+      <h2>🔁 На повторение${dueProblems.length > 0 ? ` <span class="badge" style="background:#fff1d6;">${dueProblems.length}</span>` : ''}</h2>
+      <p style="color:var(--muted); margin:0 0 0.5rem;">Эти задачи ты делала с ошибкой или давно не повторяла. Ответь, и я уберу из повторения, как только наберёшь 3 правильных подряд (потом верну через 7 дней).</p>
+      ${dueProblems.map((d, i) => `
+        <div class="problem" data-repeat-idx="${i}">
+          <div class="q"><span class="badge">${d.badge}</span> <strong>${d.sourceTopic}</strong> ${d.status.lastOk === false ? '<span class="badge" style="background:#ffe5e5;">была ошибка</span>' : `<span class="badge">стрик ${d.status.streak}/3</span>`}</div>
+          <div class="q">${d.problem.q}</div>
+          ${renderProblemInput(d.problem, `repeat-${i}`)}
+          <button class="secondary check-repeat-btn" data-idx="${i}">Проверить</button>
+          <div class="feedback-area"></div>
+        </div>
+      `).join('')}
+    </div>
+  ` : '';
 
   const html = `
+    ${repeatHtml}
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
         <div>
@@ -293,6 +404,21 @@ function renderToday() {
   if (nextKey) document.getElementById('next-day').onclick = () => { state.viewedDayKey = nextKey; saveState(); render(); };
   document.getElementById('goto-today').onclick = () => { state.viewedDayKey = null; saveState(); render(); };
 
+  // Проверка задач из «На повторение»
+  document.querySelectorAll('.check-repeat-btn').forEach(btn => {
+    btn.onclick = () => {
+      const idx = Number(btn.dataset.idx);
+      const d = dueProblems[idx];
+      const value = getProblemValue(d.problem, `repeat-${idx}`);
+      const ok = checkAnswer(d.problem, value);
+      const parent = btn.closest('.problem');
+      parent.classList.remove('correct', 'wrong');
+      parent.classList.add(ok ? 'correct' : 'wrong');
+      parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Ошибка'}${d.problem.hint && !ok ? ` <div class="hint">💡 ${d.problem.hint}</div>` : ''}</div>`;
+      recordProblemResult(d.pid, ok);
+    };
+  });
+
   // Проверка повторения
   document.querySelectorAll('.check-review-btn').forEach(btn => {
     btn.onclick = () => {
@@ -305,6 +431,7 @@ function renderToday() {
       parent.classList.add(ok ? 'correct' : 'wrong');
       const fb = parent.querySelector('.feedback-area');
       fb.innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Ошибка'}${r.problem.hint && !ok ? ` <div class="hint">💡 ${r.problem.hint}</div>` : ''}</div>`;
+      recordProblemResult(r.pid, ok);
     };
   });
 
@@ -335,6 +462,9 @@ function getProblemValue(p, idPrefix) {
 
 function checkAllProblems(dayKey, day, problemsToShow) {
   let correct = 0;
+  const km = dayKey.match(/^w(\d+)d(\d+)$/);
+  const wN = km ? km[1] : '0';
+  const dN = km ? km[2] : '0';
   problemsToShow.forEach((p, i) => {
     const value = getProblemValue(p, `prob-${i}`);
     const ok = checkAnswer(p, value);
@@ -343,6 +473,7 @@ function checkAllProblems(dayKey, day, problemsToShow) {
     parent.classList.add(ok ? 'correct' : 'wrong');
     const fb = parent.querySelector('.feedback-area');
     fb.innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно' : '❌ Ошибка'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
+    recordProblemResult(`prog.${day.subject}.w${wN}.d${dN}.p${i}`, ok);
     if (ok) correct++;
   });
 
@@ -453,6 +584,7 @@ function renderSailing() {
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}</div>`;
+      recordProblemResult(`sail.${cid}.p${idx}`, ok);
     };
   });
 }
@@ -568,6 +700,7 @@ function renderMath() {
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
+      recordProblemResult(`prog.math.w${mw}.d${md}.p${pidx}`, ok);
     };
   });
 }
@@ -652,6 +785,7 @@ function renderRussian() {
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
+      recordProblemResult(`rus.w${wk}.p${pidx}`, ok);
     };
   });
 }
@@ -749,6 +883,7 @@ function renderInformatics() {
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
+      recordProblemResult(`inf.${tid}.w${wk}.p${pidx}`, ok);
     };
   });
 }
