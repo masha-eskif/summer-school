@@ -1431,6 +1431,11 @@ window.SKILLS = {
       description: 'Международный свод сигналов (МСС / International Code of Signals). 26 буквенных флагов + специальные. На парусной гонке судья поднимает их со стартового судна — без знания флагов проворониваешь сигналы.',
       videoUrl: YT('сигнальные флаги международный свод сигналов МСС'),
       raceFlagsVideoUrl: YT('сигнальные флаги парусные гонки старт'),
+      learningLinks: [
+        { name: '📖 Википедия — Международный свод сигналов', url: 'https://ru.wikipedia.org/wiki/Международный_свод_сигналов', desc: 'Подробная статья: история, все флаги, значения, специальные.' },
+        { name: '🎯 Quizlet — карточки для запоминания', url: 'https://quizlet.com/subject/maritime-signal-flags/', desc: 'Тренажёр-карточки: смотришь флаг → угадываешь букву/значение.' },
+        { name: '⛵ Гоночные правила (ППГ) — RYA Race signals', url: 'https://www.sailing.org/inside-world-sailing/rules-officials/', desc: 'World Sailing — официальный сайт. Глава Race Signals с PDF-таблицей всех гоночных флагов.' }
+      ],
       sections: [
         {
           title: 'Как читать таблицу',

@@ -899,44 +899,69 @@ function renderSkills() {
     const isOpen = openSkillsCats.has(cat.id);
     let bodyHtml = '';
     if (cat.id === 'flags') {
+      const flagImgUrl = (name) => `https://commons.wikimedia.org/wiki/Special:FilePath/ICS_${name.replace(/ /g, '_')}.svg?width=140`;
       const sectionsHtml = (cat.sections || []).map(s => `
         <div class="sailing-lesson">
           <h4>${s.title}</h4>
           <div class="theory" style="margin-top:0.3rem;">${s.theory}</div>
         </div>
       `).join('');
-      const tableHtml = `
-        <h3>26 буквенных флагов</h3>
-        <div style="overflow-x:auto;">
-          <table style="font-size:0.92rem;">
-            <thead><tr><th>Буква</th><th>Имя</th><th>Описание</th><th>Значение</th><th>В гонке</th></tr></thead>
-            <tbody>
-              ${cat.flagsTable.map(f => `
-                <tr>
-                  <td><strong style="font-size:1.1rem;">${f.letter}</strong></td>
-                  <td>${f.name}<br><small style="color:var(--muted);">${f.ru}</small></td>
-                  <td>${f.desc}</td>
-                  <td>${f.meaning}</td>
-                  <td>${f.race.startsWith('⭐') ? `<strong>${f.race}</strong>` : f.race}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+      const linksHtml = (cat.learningLinks || []).length > 0 ? `
+        <h3 style="margin-top:1rem;">📚 Где ещё научиться</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.5rem;">
+          ${cat.learningLinks.map(l => `
+            <a class="video-btn" href="${l.url}" target="_blank" rel="noopener" style="display:block; text-align:left;">
+              <strong>${l.name}</strong><br><small style="opacity:0.9;">${l.desc}</small>
+            </a>
+          `).join('')}
         </div>
-        <h3 style="margin-top:1rem;">Гоночные флаги (не буквенные)</h3>
-        ${cat.raceSpecificFlags.map(f => `
-          <div class="sailing-lesson">
-            <h4>${f.name}</h4>
-            <div style="margin:0.2rem 0;"><strong>Вид:</strong> ${f.desc}</div>
-            <div><strong>Значение:</strong> ${f.meaning}</div>
-          </div>
-        `).join('')}
+      ` : '';
+      const cardStyle = 'display:flex; flex-direction:column; align-items:stretch; background:#fff; border:1px solid #e3ecf2; border-radius:10px; padding:0.7rem; gap:0.4rem;';
+      const imgStyle = 'width:100%; height:90px; object-fit:contain; background:#f4f8fc; border-radius:6px;';
+      const flagCardsHtml = `
+        <h3>26 буквенных флагов</h3>
+        <p style="color:var(--muted); margin:0 0 0.5rem;">Гоночные сигналы помечены ⭐</p>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.6rem;">
+          ${cat.flagsTable.map(f => `
+            <div style="${cardStyle}">
+              <img loading="lazy" alt="Флаг ${f.letter}" src="${flagImgUrl(f.name)}" style="${imgStyle}">
+              <div style="display:flex; align-items:baseline; gap:0.5rem;">
+                <strong style="font-size:1.6rem; line-height:1;">${f.letter}</strong>
+                <span><strong>${f.name}</strong><br><small style="color:var(--muted);">${f.ru}</small></span>
+              </div>
+              <div style="font-size:0.88rem;"><strong>Значение:</strong> ${f.meaning}</div>
+              ${f.race && f.race !== '—' ? `<div style="font-size:0.88rem; padding:0.35rem 0.5rem; background:${f.race.startsWith('⭐') ? '#fff1d6' : '#f4f8fc'}; border-radius:6px;"><strong>В гонке:</strong> ${f.race}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+      const raceFlagImg = (name) => {
+        if (name.startsWith('AP')) return 'https://commons.wikimedia.org/wiki/Special:FilePath/ICS_Answer.svg?width=140';
+        if (name.startsWith('1st')) return 'https://commons.wikimedia.org/wiki/Special:FilePath/ICS_Repeat_One.svg?width=140';
+        return null;
+      };
+      const raceCardsHtml = `
+        <h3 style="margin-top:1.2rem;">Гоночные флаги (не буквенные)</h3>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.6rem;">
+          ${cat.raceSpecificFlags.map(f => {
+            const img = raceFlagImg(f.name);
+            return `
+              <div style="${cardStyle}">
+                ${img ? `<img loading="lazy" alt="${f.name}" src="${img}" style="${imgStyle}">` : `<div style="${imgStyle} display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:0.88rem;">Зависит от класса</div>`}
+                <strong>${f.name}</strong>
+                <div style="font-size:0.88rem;">${f.desc}</div>
+                <div style="font-size:0.88rem; padding:0.35rem 0.5rem; background:#fff1d6; border-radius:6px;">${f.meaning}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
         <p style="margin-top:1rem;">
           <a class="video-btn" href="${cat.videoUrl}" target="_blank" rel="noopener">▶ Все флаги (видео)</a>
           <a class="video-btn" href="${cat.raceFlagsVideoUrl}" target="_blank" rel="noopener">▶ Флаги парусной гонки</a>
         </p>
+        ${linksHtml}
       `;
-      bodyHtml = sectionsHtml + tableHtml;
+      bodyHtml = sectionsHtml + flagCardsHtml + raceCardsHtml;
     } else if (cat.id === 'photo') {
       bodyHtml = cat.topics.map(t => `
         <div class="sailing-lesson">
