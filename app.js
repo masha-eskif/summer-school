@@ -258,13 +258,14 @@ function getDueRepeatProblems(maxN) {
 
 /* ============ Рендер: вкладки ============ */
 
-const TABS = ['today', 'math', 'russian', 'informatics', 'sailing', 'diary', 'progress', 'settings'];
+const TABS = ['today', 'math', 'russian', 'informatics', 'sailing', 'skills', 'diary', 'progress', 'settings'];
 const TAB_LABELS = {
   today: '📚 Сегодня',
   math: '📐 Математика',
   russian: '📝 Русский',
   informatics: '💻 Информатика',
   sailing: '⛵ Парус',
+  skills: '🎨 Навыки',
   diary: '📓 Дневник',
   progress: '📈 Прогресс',
   settings: '⚙️ Настройки'
@@ -888,6 +889,96 @@ function renderInformatics() {
   });
 }
 
+/* ============ Вкладка «Навыки» ============ */
+
+let openSkillsCats = new Set(['flags']);
+
+function renderSkills() {
+  const S = window.SKILLS;
+  const html = S.categories.map(cat => {
+    const isOpen = openSkillsCats.has(cat.id);
+    let bodyHtml = '';
+    if (cat.id === 'flags') {
+      const sectionsHtml = (cat.sections || []).map(s => `
+        <div class="sailing-lesson">
+          <h4>${s.title}</h4>
+          <div class="theory" style="margin-top:0.3rem;">${s.theory}</div>
+        </div>
+      `).join('');
+      const tableHtml = `
+        <h3>26 буквенных флагов</h3>
+        <div style="overflow-x:auto;">
+          <table style="font-size:0.92rem;">
+            <thead><tr><th>Буква</th><th>Имя</th><th>Описание</th><th>Значение</th><th>В гонке</th></tr></thead>
+            <tbody>
+              ${cat.flagsTable.map(f => `
+                <tr>
+                  <td><strong style="font-size:1.1rem;">${f.letter}</strong></td>
+                  <td>${f.name}<br><small style="color:var(--muted);">${f.ru}</small></td>
+                  <td>${f.desc}</td>
+                  <td>${f.meaning}</td>
+                  <td>${f.race.startsWith('⭐') ? `<strong>${f.race}</strong>` : f.race}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        <h3 style="margin-top:1rem;">Гоночные флаги (не буквенные)</h3>
+        ${cat.raceSpecificFlags.map(f => `
+          <div class="sailing-lesson">
+            <h4>${f.name}</h4>
+            <div style="margin:0.2rem 0;"><strong>Вид:</strong> ${f.desc}</div>
+            <div><strong>Значение:</strong> ${f.meaning}</div>
+          </div>
+        `).join('')}
+        <p style="margin-top:1rem;">
+          <a class="video-btn" href="${cat.videoUrl}" target="_blank" rel="noopener">▶ Все флаги (видео)</a>
+          <a class="video-btn" href="${cat.raceFlagsVideoUrl}" target="_blank" rel="noopener">▶ Флаги парусной гонки</a>
+        </p>
+      `;
+      bodyHtml = sectionsHtml + tableHtml;
+    } else if (cat.id === 'photo') {
+      bodyHtml = cat.topics.map(t => `
+        <div class="sailing-lesson">
+          <h4>📸 ${t.title}</h4>
+          <div class="theory" style="margin-top:0.3rem;">${t.theory}</div>
+          <br><a class="video-btn" href="${t.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
+        </div>
+      `).join('');
+    }
+    return `
+      <div class="sailing-cat ${isOpen ? 'open' : ''}" data-skill="${cat.id}">
+        <div class="sailing-cat-head">
+          <span>${cat.icon} ${cat.name}</span>
+          <span>${isOpen ? '▼' : '▶'}</span>
+        </div>
+        <div class="sailing-cat-body">
+          <p style="color:var(--muted); margin:0 0 0.6rem;">${cat.description}</p>
+          ${bodyHtml}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('view').innerHTML = `
+    <div class="card">
+      <h2>🎨 Развитие навыков</h2>
+      <p style="color:var(--muted); margin:0 0 0.6rem;">Свободный справочник — изучай в своём темпе, без программы и без проверок. Кликни по разделу, чтобы раскрыть.</p>
+      ${html}
+    </div>
+  `;
+
+  document.querySelectorAll('[data-skill]').forEach(div => {
+    const head = div.querySelector('.sailing-cat-head');
+    if (head) head.onclick = () => {
+      const id = div.dataset.skill;
+      if (openSkillsCats.has(id)) openSkillsCats.delete(id);
+      else openSkillsCats.add(id);
+      renderSkills();
+    };
+  });
+}
+
 /* ============ Вкладка «Дневник» ============ */
 
 function renderDiary() {
@@ -1185,6 +1276,7 @@ function render() {
   if (currentTab === 'russian')     renderRussian();
   if (currentTab === 'informatics') renderInformatics();
   if (currentTab === 'sailing')     renderSailing();
+  if (currentTab === 'skills')      renderSkills();
   if (currentTab === 'diary')       renderDiary();
   if (currentTab === 'progress')    renderProgress();
   if (currentTab === 'settings')    renderSettings();
