@@ -165,10 +165,11 @@ function gradeFromPercent(percent) {
 
 /* ============ Рендер: вкладки ============ */
 
-const TABS = ['today', 'sailing', 'diary', 'progress', 'settings'];
+const TABS = ['today', 'sailing', 'informatics', 'diary', 'progress', 'settings'];
 const TAB_LABELS = {
   today: '📚 Сегодня',
   sailing: '⛵ Парус',
+  informatics: '💻 Информатика',
   diary: '📓 Дневник',
   progress: '📈 Прогресс',
   settings: '⚙️ Настройки'
@@ -450,6 +451,103 @@ function renderSailing() {
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}</div>`;
+    };
+  });
+}
+
+/* ============ Вкладка «Информатика» ============ */
+
+let openInformaticsTracks = new Set(['oge']);
+
+function renderInformatics() {
+  const I = window.INFORMATICS;
+  const tracks = [I.tracks.oge, I.tracks.python];
+
+  const trackHtml = tracks.map(track => {
+    const isOpen = openInformaticsTracks.has(track.id);
+    const sched = I.schedule[track.id];
+    return `
+      <div class="sailing-cat ${isOpen ? 'open' : ''}" data-track="${track.id}">
+        <div class="sailing-cat-head">
+          <span>${track.icon} ${track.name}</span>
+          <span>${isOpen ? '▼' : '▶'}</span>
+        </div>
+        <div class="sailing-cat-body">
+          <p style="color:var(--muted); margin:0 0 0.3rem;">${track.description}</p>
+          <p style="color:var(--muted); margin:0 0 1rem;">⏰ <strong>${sched.label}</strong></p>
+          ${track.weeks.map(w => `
+            <div class="sailing-lesson">
+              <h4>Неделя ${w.week}: ${w.topic}</h4>
+              ${w.examTask ? `<div style="font-size:0.85rem; color:var(--muted); margin:0.2rem 0;">📝 ${w.examTask}</div>` : ''}
+              <div class="theory" style="margin-top:0.3rem;">${w.theory}</div>
+              <div style="font-size:0.85rem; color:var(--muted); margin-top:0.4rem;">📖 ${w.reference}</div>
+              <br><a class="video-btn" href="${w.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
+              ${w.problems.map((p, j) => `
+                <div class="problem" data-track="${track.id}" data-week="${w.week}" data-pidx="${j}">
+                  <div class="q">${p.q}</div>
+                  ${renderProblemInput(p, `inf-${track.id}-w${w.week}-p${j}`)}
+                  <button class="secondary check-inf-btn" data-track="${track.id}" data-week="${w.week}" data-pidx="${j}">Проверить</button>
+                  <div class="feedback-area"></div>
+                </div>
+              `).join('')}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const aiHtml = `
+    <div class="card">
+      <h2>🤖 ИИ-помощники для учёбы</h2>
+      <p style="color:var(--muted); margin:0 0 0.7rem;">Бесплатные чаты — особенно полезны для Python: можно показать код, попросить объяснить ошибку или новую тему.</p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.6rem; margin-bottom:1rem;">
+        ${I.aiHelpers.map(h => `
+          <a class="video-btn" href="${h.url}" target="_blank" rel="noopener" style="display:block; text-align:left;">
+            <strong>${h.name}</strong><br><small style="opacity:0.9;">${h.desc}</small>
+          </a>
+        `).join('')}
+      </div>
+      <h3 style="margin-top:0.6rem;">💡 Как спрашивать ИИ, чтобы научиться (а не просто получить ответ)</h3>
+      <ul style="margin:0.3rem 0 0 1.2rem;">
+        ${I.tips.map(t => `<li style="margin-bottom:0.3rem;">${t}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+
+  document.getElementById('view').innerHTML = `
+    <div class="card">
+      <h2>💻 Информатика</h2>
+      <p style="color:var(--muted); margin:0 0 0.6rem;">Две дорожки: подготовка к ОГЭ (Пн утром, 1 час) и Python с нуля (Ср утром, 1.5 часа). Кликни по дорожке, чтобы раскрыть.</p>
+      ${trackHtml}
+    </div>
+    ${aiHtml}
+  `;
+
+  document.querySelectorAll('.sailing-cat-head').forEach(h => {
+    h.onclick = () => {
+      const tid = h.parentElement.dataset.track;
+      if (!tid) return;
+      if (openInformaticsTracks.has(tid)) openInformaticsTracks.delete(tid);
+      else openInformaticsTracks.add(tid);
+      renderInformatics();
+    };
+  });
+
+  document.querySelectorAll('.check-inf-btn').forEach(btn => {
+    btn.onclick = () => {
+      const tid = btn.dataset.track;
+      const wk = Number(btn.dataset.week);
+      const pidx = Number(btn.dataset.pidx);
+      const track = window.INFORMATICS.tracks[tid];
+      const week = track.weeks.find(w => w.week === wk);
+      const p = week.problems[pidx];
+      const value = getProblemValue(p, `inf-${tid}-w${wk}-p${pidx}`);
+      const ok = checkAnswer(p, value);
+      const parent = btn.closest('.problem');
+      parent.classList.remove('correct', 'wrong');
+      parent.classList.add(ok ? 'correct' : 'wrong');
+      parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
     };
   });
 }
@@ -746,11 +844,12 @@ function renderSettings() {
 function render() {
   renderHeader();
   renderTabs();
-  if (currentTab === 'today')    renderToday();
-  if (currentTab === 'sailing')  renderSailing();
-  if (currentTab === 'diary')    renderDiary();
-  if (currentTab === 'progress') renderProgress();
-  if (currentTab === 'settings') renderSettings();
+  if (currentTab === 'today')       renderToday();
+  if (currentTab === 'sailing')     renderSailing();
+  if (currentTab === 'informatics') renderInformatics();
+  if (currentTab === 'diary')       renderDiary();
+  if (currentTab === 'progress')    renderProgress();
+  if (currentTab === 'settings')    renderSettings();
 }
 
 document.addEventListener('DOMContentLoaded', render);
