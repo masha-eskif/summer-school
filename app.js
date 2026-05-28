@@ -12,7 +12,8 @@ const DEFAULT_STATE = {
   history: [],                             // [{date, dayKey, week, dayNum, subject, topic, grade, percent, bonusType, bonusText}]
   todayAnswers: {},                        // {dayKey: {idx: {value, correct}}}
   viewedDayKey: null,                      // какой день показывать в табе «Сегодня»
-  problemHistory: {}                       // {pid: [{date, ok}]} — для адаптивного повторения
+  problemHistory: {},                      // {pid: [{date, ok}]} — для адаптивного повторения
+  languageLessons: []                      // [{id, date, language: 'en'|'de', minutes, topics}]
 };
 
 const STREAK_PAUSE = 3;                    // правильных подряд → пауза
@@ -1047,23 +1048,23 @@ function renderDiary() {
 
 /* ============ Вкладка «Прогресс» (график на canvas) ============ */
 
-function renderProgress() {
-  if (state.history.length === 0) {
-    document.getElementById('view').innerHTML = `
-      <div class="card"><h2>📈 Прогресс</h2><p class="empty">Пока нет данных. Реши хотя бы одно ДЗ.</p></div>
-    `;
-    return;
-  }
+const LANGS = {
+  en: { label: 'Английский', flag: '🇬🇧' },
+  de: { label: 'Немецкий',  flag: '🇩🇪' }
+};
 
-  // Подсчёты
+function renderProgress() {
+  const hasHomework = state.history.length > 0;
+
+  // Подсчёты по ДЗ
   const total = state.history.length;
-  const avgGrade = (state.history.reduce((s, h) => s + h.grade, 0) / total).toFixed(2);
+  const avgGrade = hasHomework ? (state.history.reduce((s, h) => s + h.grade, 0) / total).toFixed(2) : '—';
   const fiveCount = state.history.filter(h => h.grade === 5).length;
   const bonusCount = state.history.filter(h => h.bonusType).length;
 
-  document.getElementById('view').innerHTML = `
+  const homeworkBlock = hasHomework ? `
     <div class="card">
-      <h2>📈 Прогресс</h2>
+      <h2>📈 Прогресс по ДЗ</h2>
       <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.7rem; margin-bottom:0.8rem;">
         <div class="theory"><strong>Сделано ДЗ:</strong><br>${total}</div>
         <div class="theory"><strong>Средняя оценка:</strong><br>${avgGrade}</div>
@@ -1079,10 +1080,145 @@ function renderProgress() {
         <canvas id="weekly-chart"></canvas>
       </div>
     </div>
+  ` : `
+    <div class="card"><h2>📈 Прогресс по ДЗ</h2><p class="empty">Пока нет данных. Реши хотя бы одно ДЗ.</p></div>
   `;
 
-  drawDailyChart();
-  drawWeeklyChart();
+  document.getElementById('view').innerHTML = homeworkBlock + renderLanguageLessonsCard();
+
+  if (hasHomework) {
+    drawDailyChart();
+    drawWeeklyChart();
+  }
+
+  wireLanguageLessons();
+}
+
+function renderLanguageLessonsCard() {
+  const lessons = [...(state.languageLessons || [])].sort((a, b) => a.date < b.date ? 1 : -1);
+
+  const statsHtml = ['en', 'de'].map(code => {
+    const own = lessons.filter(l => l.language === code);
+    const minutes = own.reduce((s, l) => s + (l.minutes || 0), 0);
+    const hours = (minutes / 60).toFixed(1);
+    return `
+      <div class="theory">
+        <strong>${LANGS[code].flag} ${LANGS[code].label}</strong><br>
+        Занятий: ${own.length}<br>
+        Всего: ${minutes} мин (~${hours} ч)
+      </div>
+    `;
+  }).join('');
+
+  const listHtml = lessons.length === 0 ? `
+    <p class="empty" style="padding:1rem;">Пока не записано ни одного занятия. Добавь первое выше.</p>
+  ` : `
+    <div style="overflow-x:auto;">
+      <table>
+        <thead>
+          <tr><th>Дата</th><th>Язык</th><th>Длит.</th><th>Что обсудили</th><th></th></tr>
+        </thead>
+        <tbody>
+          ${lessons.map(l => {
+            const dateRu = parseISO(l.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' });
+            const lang = LANGS[l.language] || { flag: '❓', label: l.language };
+            const topicsEsc = escapeHtml(l.topics || '');
+            return `
+              <tr>
+                <td>${dateRu}</td>
+                <td>${lang.flag} ${lang.label}</td>
+                <td>${l.minutes} мин</td>
+                <td style="white-space:pre-wrap;">${topicsEsc}</td>
+                <td><button class="secondary lang-del-btn" data-id="${l.id}" title="Удалить">✕</button></td>
+              </tr>
+            `;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  return `
+    <div class="card">
+      <h2>🗣️ Языки с репетитором</h2>
+      <p style="color:var(--muted); margin:0 0 0.6rem;">Записывай, когда позанималась с репетитором по английскому или немецкому. Сюда не входят домашки — это именно про сами занятия.</p>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0.7rem; margin-bottom:1rem;">
+        ${statsHtml}
+      </div>
+
+      <h3>Добавить занятие</h3>
+      <div class="settings-row" style="flex-wrap:wrap;">
+        <label style="flex:0 0 auto;"><strong>Язык:</strong></label>
+        <label style="flex:0 0 auto;"><input type="radio" name="lang-lesson-lang" value="en" checked> 🇬🇧 Английский</label>
+        <label style="flex:0 0 auto;"><input type="radio" name="lang-lesson-lang" value="de"> 🇩🇪 Немецкий</label>
+      </div>
+      <div class="settings-row" style="flex-wrap:wrap; gap:0.6rem;">
+        <label style="flex:1 1 140px;"><strong>Дата:</strong><br>
+          <input type="date" id="lang-lesson-date" value="${isoDate(new Date())}" style="width:100%; padding:0.4rem; border:1px solid var(--border); border-radius:6px;">
+        </label>
+        <label style="flex:1 1 140px;"><strong>Длительность (мин):</strong><br>
+          <input type="number" id="lang-lesson-minutes" min="5" max="240" step="5" value="60" style="width:100%; padding:0.4rem; border:1px solid var(--border); border-radius:6px;">
+        </label>
+      </div>
+      <div style="padding:0.7rem 0;">
+        <label><strong>Что обсудили / что прошли:</strong><br>
+          <textarea id="lang-lesson-topics" rows="3" placeholder="Например: Present Perfect, неправильные глаголы, разговор про лето..." style="width:100%; padding:0.5rem; border:1px solid var(--border); border-radius:6px; font-family:inherit; font-size:0.95rem; resize:vertical;"></textarea>
+        </label>
+      </div>
+      <button class="primary" id="lang-lesson-save">💾 Сохранить занятие</button>
+
+      <h3 style="margin-top:1.4rem;">История занятий</h3>
+      ${listHtml}
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function wireLanguageLessons() {
+  const saveBtn = document.getElementById('lang-lesson-save');
+  if (!saveBtn) return;
+
+  saveBtn.onclick = () => {
+    const langEl = document.querySelector('input[name="lang-lesson-lang"]:checked');
+    const date = document.getElementById('lang-lesson-date').value;
+    const minutes = Number(document.getElementById('lang-lesson-minutes').value);
+    const topics = document.getElementById('lang-lesson-topics').value.trim();
+
+    if (!langEl) { alert('Выбери язык'); return; }
+    if (!date) { alert('Укажи дату'); return; }
+    if (!minutes || minutes < 1) { alert('Укажи длительность в минутах'); return; }
+    if (!topics) { alert('Напиши, что обсудили на занятии'); return; }
+
+    if (!state.languageLessons) state.languageLessons = [];
+    state.languageLessons.push({
+      id: `ll-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      date,
+      language: langEl.value,
+      minutes,
+      topics
+    });
+    saveState();
+    render();
+  };
+
+  document.querySelectorAll('.lang-del-btn').forEach(btn => {
+    btn.onclick = () => {
+      const id = btn.dataset.id;
+      if (!confirm('Удалить это занятие?')) return;
+      state.languageLessons = (state.languageLessons || []).filter(l => l.id !== id);
+      saveState();
+      render();
+    };
+  });
 }
 
 function drawDailyChart() {
