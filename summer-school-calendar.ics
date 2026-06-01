@@ -8,8 +8,8 @@ X-WR-CALDESC:Ежедневные напоминания о занятиях (с
 BEGIN:VEVENT
 UID:20260601-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260601T090000
-DTEND:20260601T100000
+DTSTART:20260601T110000
+DTEND:20260601T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 1: Электричество (старт) + Окружность\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -22,8 +22,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260602-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260602T090000
-DTEND:20260602T094000
+DTSTART:20260602T110000
+DTEND:20260602T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 1: Электричество (старт) + Окружность\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -36,8 +36,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260603-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260603T090000
-DTEND:20260603T100000
+DTSTART:20260603T110000
+DTEND:20260603T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 1: Электричество (старт) + Окружность\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -50,8 +50,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260604-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260604T090000
-DTEND:20260604T103000
+DTSTART:20260604T110000
+DTEND:20260604T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 1: Электричество (старт) + Окружность\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -64,8 +64,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260605-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260605T090000
-DTEND:20260605T100000
+DTSTART:20260605T110000
+DTEND:20260605T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 1: Электричество (старт) + Окружность\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -78,8 +78,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260606-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260606T090000
-DTEND:20260606T100000
+DTSTART:20260606T110000
+DTEND:20260606T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 1: Электричество (старт) + Окружность\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -92,8 +92,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260607-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260607T090000
-DTEND:20260607T091500
+DTSTART:20260607T110000
+DTEND:20260607T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 1: Электричество (старт) + Окружность\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -106,8 +106,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260608-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260608T090000
-DTEND:20260608T100000
+DTSTART:20260608T110000
+DTEND:20260608T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 2: Цепи + Углы окружности\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -120,8 +120,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260609-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260609T090000
-DTEND:20260609T094000
+DTSTART:20260609T110000
+DTEND:20260609T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 2: Цепи + Углы окружности\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -134,8 +134,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260610-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260610T090000
-DTEND:20260610T100000
+DTSTART:20260610T110000
+DTEND:20260610T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 2: Цепи + Углы окружности\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -148,8 +148,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260611-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260611T090000
-DTEND:20260611T103000
+DTSTART:20260611T110000
+DTEND:20260611T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 2: Цепи + Углы окружности\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -162,8 +162,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260612-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260612T090000
-DTEND:20260612T100000
+DTSTART:20260612T110000
+DTEND:20260612T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 2: Цепи + Углы окружности\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -176,8 +176,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260613-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260613T090000
-DTEND:20260613T100000
+DTSTART:20260613T110000
+DTEND:20260613T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 2: Цепи + Углы окружности\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -190,8 +190,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260614-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260614T090000
-DTEND:20260614T091500
+DTSTART:20260614T110000
+DTEND:20260614T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 2: Цепи + Углы окружности\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -204,8 +204,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260615-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260615T090000
-DTEND:20260615T100000
+DTSTART:20260615T110000
+DTEND:20260615T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 3: Закон Ома + Подобие треугольников\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -218,8 +218,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260616-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260616T090000
-DTEND:20260616T094000
+DTSTART:20260616T110000
+DTEND:20260616T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 3: Закон Ома + Подобие треугольников\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -232,8 +232,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260617-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260617T090000
-DTEND:20260617T100000
+DTSTART:20260617T110000
+DTEND:20260617T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 3: Закон Ома + Подобие треугольников\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -246,8 +246,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260618-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260618T090000
-DTEND:20260618T103000
+DTSTART:20260618T110000
+DTEND:20260618T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 3: Закон Ома + Подобие треугольников\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -260,8 +260,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260619-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260619T090000
-DTEND:20260619T100000
+DTSTART:20260619T110000
+DTEND:20260619T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 3: Закон Ома + Подобие треугольников\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -274,8 +274,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260620-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260620T090000
-DTEND:20260620T100000
+DTSTART:20260620T110000
+DTEND:20260620T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 3: Закон Ома + Подобие треугольников\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -288,8 +288,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260621-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260621T090000
-DTEND:20260621T091500
+DTSTART:20260621T110000
+DTEND:20260621T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 3: Закон Ома + Подобие треугольников\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -302,8 +302,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260622-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260622T090000
-DTEND:20260622T100000
+DTSTART:20260622T110000
+DTEND:20260622T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 4: Соединения проводников + Площади и средняя линия\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -316,8 +316,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260623-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260623T090000
-DTEND:20260623T094000
+DTSTART:20260623T110000
+DTEND:20260623T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 4: Соединения проводников + Площади и средняя линия\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -330,8 +330,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260624-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260624T090000
-DTEND:20260624T100000
+DTSTART:20260624T110000
+DTEND:20260624T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 4: Соединения проводников + Площади и средняя линия\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -344,8 +344,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260625-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260625T090000
-DTEND:20260625T103000
+DTSTART:20260625T110000
+DTEND:20260625T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 4: Соединения проводников + Площади и средняя линия\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -358,8 +358,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260626-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260626T090000
-DTEND:20260626T100000
+DTSTART:20260626T110000
+DTEND:20260626T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 4: Соединения проводников + Площади и средняя линия\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -372,8 +372,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260627-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260627T090000
-DTEND:20260627T100000
+DTSTART:20260627T110000
+DTEND:20260627T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 4: Соединения проводников + Площади и средняя линия\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -386,8 +386,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260628-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260628T090000
-DTEND:20260628T091500
+DTSTART:20260628T110000
+DTEND:20260628T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 4: Соединения проводников + Площади и средняя линия\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -400,8 +400,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260629-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260629T090000
-DTEND:20260629T100000
+DTSTART:20260629T110000
+DTEND:20260629T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 5: Работа и мощность тока + Задачи на движение\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -414,8 +414,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260630-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260630T090000
-DTEND:20260630T094000
+DTSTART:20260630T110000
+DTEND:20260630T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 5: Работа и мощность тока + Задачи на движение\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -428,8 +428,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260701-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260701T090000
-DTEND:20260701T100000
+DTSTART:20260701T110000
+DTEND:20260701T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 5: Работа и мощность тока + Задачи на движение\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -442,8 +442,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260702-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260702T090000
-DTEND:20260702T103000
+DTSTART:20260702T110000
+DTEND:20260702T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 5: Работа и мощность тока + Задачи на движение\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -456,8 +456,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260703-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260703T090000
-DTEND:20260703T100000
+DTSTART:20260703T110000
+DTEND:20260703T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 5: Работа и мощность тока + Задачи на движение\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -470,8 +470,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260704-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260704T090000
-DTEND:20260704T100000
+DTSTART:20260704T110000
+DTEND:20260704T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 5: Работа и мощность тока + Задачи на движение\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -484,8 +484,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260705-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260705T090000
-DTEND:20260705T091500
+DTSTART:20260705T110000
+DTEND:20260705T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 5: Работа и мощность тока + Задачи на движение\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -498,8 +498,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260706-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260706T090000
-DTEND:20260706T100000
+DTSTART:20260706T110000
+DTEND:20260706T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 6: Свет: источники\, отражение + Задачи на работу/реку\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -512,8 +512,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260707-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260707T090000
-DTEND:20260707T094000
+DTSTART:20260707T110000
+DTEND:20260707T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 6: Свет: источники\, отражение + Задачи на работу/реку\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -526,8 +526,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260708-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260708T090000
-DTEND:20260708T100000
+DTSTART:20260708T110000
+DTEND:20260708T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 6: Свет: источники\, отражение + Задачи на работу/реку\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -540,8 +540,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260709-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260709T090000
-DTEND:20260709T103000
+DTSTART:20260709T110000
+DTEND:20260709T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 6: Свет: источники\, отражение + Задачи на работу/реку\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -554,8 +554,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260710-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260710T090000
-DTEND:20260710T100000
+DTSTART:20260710T110000
+DTEND:20260710T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 6: Свет: источники\, отражение + Задачи на работу/реку\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -568,8 +568,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260711-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260711T090000
-DTEND:20260711T100000
+DTSTART:20260711T110000
+DTEND:20260711T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 6: Свет: источники\, отражение + Задачи на работу/реку\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -582,8 +582,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260712-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260712T090000
-DTEND:20260712T091500
+DTSTART:20260712T110000
+DTEND:20260712T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 6: Свет: источники\, отражение + Задачи на работу/реку\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -596,8 +596,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260713-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260713T090000
-DTEND:20260713T100000
+DTSTART:20260713T110000
+DTEND:20260713T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 7: Преломление и линзы + Проценты\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -610,8 +610,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260714-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260714T090000
-DTEND:20260714T094000
+DTSTART:20260714T110000
+DTEND:20260714T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 7: Преломление и линзы + Проценты\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -624,8 +624,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260715-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260715T090000
-DTEND:20260715T100000
+DTSTART:20260715T110000
+DTEND:20260715T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 7: Преломление и линзы + Проценты\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -638,8 +638,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260716-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260716T090000
-DTEND:20260716T103000
+DTSTART:20260716T110000
+DTEND:20260716T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 7: Преломление и линзы + Проценты\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -652,8 +652,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260717-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260717T090000
-DTEND:20260717T100000
+DTSTART:20260717T110000
+DTEND:20260717T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 7: Преломление и линзы + Проценты\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -666,8 +666,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260718-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260718T090000
-DTEND:20260718T100000
+DTSTART:20260718T110000
+DTEND:20260718T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 7: Преломление и линзы + Проценты\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -680,8 +680,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260719-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260719T090000
-DTEND:20260719T091500
+DTSTART:20260719T110000
+DTEND:20260719T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 7: Преломление и линзы + Проценты\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -694,8 +694,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260720-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260720T090000
-DTEND:20260720T100000
+DTSTART:20260720T110000
+DTEND:20260720T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 8: Формула линзы\, глаз\, дисперсия + Сложные проценты\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -708,8 +708,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260721-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260721T090000
-DTEND:20260721T094000
+DTSTART:20260721T110000
+DTEND:20260721T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 8: Формула линзы\, глаз\, дисперсия + Сложные проценты\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -722,8 +722,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260722-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260722T090000
-DTEND:20260722T100000
+DTSTART:20260722T110000
+DTEND:20260722T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 8: Формула линзы\, глаз\, дисперсия + Сложные проценты\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -736,8 +736,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260723-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260723T090000
-DTEND:20260723T103000
+DTSTART:20260723T110000
+DTEND:20260723T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 8: Формула линзы\, глаз\, дисперсия + Сложные проценты\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -750,8 +750,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260724-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260724T090000
-DTEND:20260724T100000
+DTSTART:20260724T110000
+DTEND:20260724T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 8: Формула линзы\, глаз\, дисперсия + Сложные проценты\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -764,8 +764,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260725-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260725T090000
-DTEND:20260725T100000
+DTSTART:20260725T110000
+DTEND:20260725T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 8: Формула линзы\, глаз\, дисперсия + Сложные проценты\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -778,8 +778,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260726-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260726T090000
-DTEND:20260726T091500
+DTSTART:20260726T110000
+DTEND:20260726T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 8: Формула линзы\, глаз\, дисперсия + Сложные проценты\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -792,8 +792,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260727-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260727T090000
-DTEND:20260727T100000
+DTSTART:20260727T110000
+DTEND:20260727T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 9: Радиоактивность\, ядро + Линейная и квадратичная функция\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -806,8 +806,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260728-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260728T090000
-DTEND:20260728T094000
+DTSTART:20260728T110000
+DTEND:20260728T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 9: Радиоактивность\, ядро + Линейная и квадратичная функция\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -820,8 +820,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260729-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260729T090000
-DTEND:20260729T100000
+DTSTART:20260729T110000
+DTEND:20260729T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 9: Радиоактивность\, ядро + Линейная и квадратичная функция\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -834,8 +834,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260730-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260730T090000
-DTEND:20260730T103000
+DTSTART:20260730T110000
+DTEND:20260730T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 9: Радиоактивность\, ядро + Линейная и квадратичная функция\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -848,8 +848,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260731-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260731T090000
-DTEND:20260731T100000
+DTSTART:20260731T110000
+DTEND:20260731T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 9: Радиоактивность\, ядро + Линейная и квадратичная функция\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -862,8 +862,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260801-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260801T090000
-DTEND:20260801T100000
+DTSTART:20260801T110000
+DTEND:20260801T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 9: Радиоактивность\, ядро + Линейная и квадратичная функция\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -876,8 +876,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260802-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260802T090000
-DTEND:20260802T091500
+DTSTART:20260802T110000
+DTEND:20260802T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 9: Радиоактивность\, ядро + Линейная и квадратичная функция\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -890,8 +890,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260803-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260803T090000
-DTEND:20260803T100000
+DTSTART:20260803T110000
+DTEND:20260803T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 10: Ядерные реакции + Графики функций\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -904,8 +904,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260804-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260804T090000
-DTEND:20260804T094000
+DTSTART:20260804T110000
+DTEND:20260804T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 10: Ядерные реакции + Графики функций\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -918,8 +918,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260805-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260805T090000
-DTEND:20260805T100000
+DTSTART:20260805T110000
+DTEND:20260805T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 10: Ядерные реакции + Графики функций\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -932,8 +932,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260806-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260806T090000
-DTEND:20260806T103000
+DTSTART:20260806T110000
+DTEND:20260806T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 10: Ядерные реакции + Графики функций\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -946,8 +946,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260807-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260807T090000
-DTEND:20260807T100000
+DTSTART:20260807T110000
+DTEND:20260807T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 10: Ядерные реакции + Графики функций\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -960,8 +960,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260808-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260808T090000
-DTEND:20260808T100000
+DTSTART:20260808T110000
+DTEND:20260808T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 10: Ядерные реакции + Графики функций\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -974,8 +974,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260809-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260809T090000
-DTEND:20260809T091500
+DTSTART:20260809T110000
+DTEND:20260809T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 10: Ядерные реакции + Графики функций\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -988,8 +988,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260810-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260810T090000
-DTEND:20260810T100000
+DTSTART:20260810T110000
+DTEND:20260810T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 11: Распад\, изотопы + Вероятность\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1002,8 +1002,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260811-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260811T090000
-DTEND:20260811T094000
+DTSTART:20260811T110000
+DTEND:20260811T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 11: Распад\, изотопы + Вероятность\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1016,8 +1016,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260812-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260812T090000
-DTEND:20260812T100000
+DTSTART:20260812T110000
+DTEND:20260812T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 11: Распад\, изотопы + Вероятность\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1030,8 +1030,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260813-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260813T090000
-DTEND:20260813T103000
+DTSTART:20260813T110000
+DTEND:20260813T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 11: Распад\, изотопы + Вероятность\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1044,8 +1044,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260814-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260814T090000
-DTEND:20260814T100000
+DTSTART:20260814T110000
+DTEND:20260814T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 11: Распад\, изотопы + Вероятность\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1058,8 +1058,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260815-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260815T090000
-DTEND:20260815T100000
+DTSTART:20260815T110000
+DTEND:20260815T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 11: Распад\, изотопы + Вероятность\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1072,8 +1072,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260816-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260816T090000
-DTEND:20260816T091500
+DTSTART:20260816T110000
+DTEND:20260816T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 11: Распад\, изотопы + Вероятность\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1086,8 +1086,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260817-d1@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260817T090000
-DTEND:20260817T100000
+DTSTART:20260817T110000
+DTEND:20260817T120000
 SUMMARY:📐 Математика
 DESCRIPTION:Неделя 12: Итоговое повторение + Статистика\n\nДень математики. Открой вкладку «Математика»: тема недели + задачи на Решу ОГЭ.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1100,8 +1100,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260818-d2@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260818T090000
-DTEND:20260818T094000
+DTSTART:20260818T110000
+DTEND:20260818T114000
 SUMMARY:📝 Русский (полегче)
 DESCRIPTION:Неделя 12: Итоговое повторение + Статистика\n\nЛёгкий день: одно правило или часть сжатого изложения. Вкладка «Русский».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1114,8 +1114,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260819-d3@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260819T090000
-DTEND:20260819T100000
+DTSTART:20260819T110000
+DTEND:20260819T120000
 SUMMARY:⚡ Физика
 DESCRIPTION:Неделя 12: Итоговое повторение + Статистика\n\nДень физики. Вкладка «Сегодня»: теория\, видео и задачи по теме недели.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1128,8 +1128,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260820-d4@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260820T090000
-DTEND:20260820T103000
+DTSTART:20260820T110000
+DTEND:20260820T123000
 SUMMARY:💪 Математика + 💻 Информатика (побольше)
 DESCRIPTION:Неделя 12: Итоговое повторение + Статистика\n\nНасыщенный день: сначала математика\, потом информатика. Вкладки «Математика» и «Информатика».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1142,8 +1142,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260821-d5@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260821T090000
-DTEND:20260821T100000
+DTSTART:20260821T110000
+DTEND:20260821T120000
 SUMMARY:📝 Русский + ⛵ Парус
 DESCRIPTION:Неделя 12: Итоговое повторение + Статистика\n\nРусский (закрепление недели) и приятное — теория паруса. Вкладки «Русский» и «Парус».\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1156,8 +1156,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260822-d6@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260822T090000
-DTEND:20260822T100000
+DTSTART:20260822T110000
+DTEND:20260822T120000
 SUMMARY:⚡ Физика — выходные (когда будет время)
 DESCRIPTION:Неделя 12: Итоговое повторение + Статистика\n\nФизика в выходные: занимайся когда удобно — сегодня или завтра. Вкладка «Сегодня»: теория и задачи.\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
@@ -1170,8 +1170,8 @@ END:VEVENT
 BEGIN:VEVENT
 UID:20260823-d0@masha-summer-school
 DTSTAMP:20260527T000000Z
-DTSTART:20260823T090000
-DTEND:20260823T091500
+DTSTART:20260823T110000
+DTEND:20260823T111500
 SUMMARY:🌴 Отдых
 DESCRIPTION:Неделя 12: Итоговое повторение + Статистика\n\nВыходной! Если физику ещё не делала в субботу — самое время сегодня. Сделала — отдыхай 😎\n\nСайт: https://masha-eskif.github.io/summer-school/
 URL:https://masha-eskif.github.io/summer-school/
