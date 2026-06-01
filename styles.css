@@ -187,6 +187,28 @@ main {
   font-style: italic;
   margin-top: 0.4rem;
 }
+.problem .solution {
+  margin-top: 0.45rem;
+  padding: 0.5rem 0.7rem;
+  background: #eef7f0;
+  border-left: 3px solid #3aa6b9;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.problem .answer-line {
+  margin-top: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  background: #fff6ea;
+  border-left: 3px solid #e8821a;
+  border-radius: 6px;
+  font-size: 0.88rem;
+}
+.badge.oge-badge {
+  background: #ffe2c2;
+  color: #b85700;
+  font-weight: 600;
+}
 
 button.primary {
   background: var(--sea-bright);

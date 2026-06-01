@@ -8,13 +8,18 @@
 const STORAGE_KEY = 'summer-school-state';
 const DEFAULT_STATE = {
   startDate: PROGRAM.startDateISO,        // дата старта программы (понедельник)
-  problemsPerDay: 3,                       // настраиваемое
-  history: [],                             // [{date, dayKey, week, dayNum, subject, topic, grade, percent, bonusType, bonusText}]
+  problemsPerDay: 8,                       // настраиваемое (упор на ОГЭ)
+  history: [],                             // [{date, dayKey, week, dayNum, subject, topic, grade, percent, bonusType, bonusText, ogeTotal, ogeCorrect}]
   todayAnswers: {},                        // {dayKey: {idx: {value, correct}}}
   viewedDayKey: null,                      // какой день показывать в табе «Сегодня»
   problemHistory: {},                      // {pid: [{date, ok}]} — для адаптивного повторения
-  languageLessons: []                      // [{id, date, language: 'en'|'de', minutes, topics}]
+  languageLessons: [],                     // [{id, date, language: 'en'|'de', minutes, topics}]
+  schemaV2: false,                         // флаг миграции (8 задач/день)
+  vocabRepeat: {},                         // {слово: сколько дней ещё показывать (после ошибки = 4)}
+  vocabLastDay: {}                         // {слово: ISO-дата последнего показа в опросе}
 };
+
+const VOCAB_REPEAT_DAYS = 4;               // слово с ошибкой повторяется столько дней подряд
 
 const STREAK_PAUSE = 3;                    // правильных подряд → пауза
 const PAUSE_DAYS = 7;                      // длительность паузы в днях
@@ -26,7 +31,13 @@ function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { ...DEFAULT_STATE };
-    return { ...DEFAULT_STATE, ...JSON.parse(raw) };
+    const merged = { ...DEFAULT_STATE, ...JSON.parse(raw) };
+    // Миграция на расширенную программу: поднимаем число задач в день один раз
+    if (!merged.schemaV2) {
+      if (!merged.problemsPerDay || merged.problemsPerDay < 8) merged.problemsPerDay = 8;
+      merged.schemaV2 = true;
+    }
+    return merged;
   } catch (e) {
     return { ...DEFAULT_STATE };
   }
@@ -321,8 +332,11 @@ function renderToday() {
   const prevKey = linear > 0 ? `w${Math.floor((linear - 1) / 5) + 1}d${((linear - 1) % 5) + 1}` : null;
   const nextKey = linear < PROGRAM.weeks.length * 5 - 1 ? `w${Math.floor((linear + 1) / 5) + 1}d${((linear + 1) % 5) + 1}` : null;
 
-  const problemsToShow = day.problems.slice(0, state.problemsPerDay);
+  // Банк расширенных задач (8/день, ОГЭ + разбор) переопределяет базовые из data.js
+  const dayProblems = (window.PROBLEM_BANK && window.PROBLEM_BANK[key]) || day.problems;
+  const problemsToShow = dayProblems.slice(0, state.problemsPerDay);
   const dueProblems = getDueRepeatProblems(MAX_REPEAT_PROBLEMS);
+  const vocabWords = getVocabForDay(linear);
 
   const repeatHtml = dueProblems.length > 0 ? `
     <div class="card">
@@ -331,7 +345,7 @@ function renderToday() {
       ${dueProblems.map((d, i) => `
         <div class="problem" data-repeat-idx="${i}">
           <div class="q"><span class="badge">${d.badge}</span> <strong>${d.sourceTopic}</strong> ${d.status.lastOk === false ? '<span class="badge" style="background:#ffe5e5;">была ошибка</span>' : `<span class="badge">стрик ${d.status.streak}/3</span>`}</div>
-          <div class="q">${d.problem.q}</div>
+          <div class="q">${d.problem.q}${ogeBadge(d.problem)}</div>
           ${renderProblemInput(d.problem, `repeat-${i}`)}
           <button class="secondary check-repeat-btn" data-idx="${i}">Проверить</button>
           <div class="feedback-area"></div>
@@ -368,7 +382,7 @@ function renderToday() {
       ${review.map((r, i) => `
         <div class="problem" data-review-idx="${i}">
           <div class="q"><strong>${r.fromTopic}</strong> <span class="badge">${r.fromDate}</span></div>
-          <div class="q">${r.problem.q}</div>
+          <div class="q">${r.problem.q}${ogeBadge(r.problem)}</div>
           ${renderProblemInput(r.problem, `review-${i}`)}
           <button class="secondary check-review-btn" data-idx="${i}">Проверить</button>
           <div class="feedback-area"></div>
@@ -389,7 +403,7 @@ function renderToday() {
       <p style="color:var(--muted); margin:0 0 0.5rem;">Заполни ответы и нажми «Проверить ДЗ» внизу.</p>
       ${problemsToShow.map((p, i) => `
         <div class="problem" data-prob-idx="${i}">
-          <div class="q">№${i + 1}. ${p.q}</div>
+          <div class="q">№${i + 1}. ${p.q}${ogeBadge(p)}</div>
           ${renderProblemInput(p, `prob-${i}`)}
           <div class="feedback-area"></div>
         </div>
@@ -397,6 +411,23 @@ function renderToday() {
       <button class="primary" id="check-all-btn">Проверить ДЗ</button>
       <div id="result-area"></div>
     </div>
+
+    ${vocabWords.length > 0 ? `
+    <div class="card">
+      <h2>📚 Словарные слова дня <span class="badge">${vocabWords.length}</span></h2>
+      <p style="color:var(--muted); margin:0 0 0.5rem;">Прочитай транскрипцию и значение — напиши слово правильно. Это каждый день, даже когда нет русского. Если ошиблась — слово будет повторяться 4 дня подряд, пока не запомнишь.</p>
+      ${vocabWords.map((v, i) => `
+        <div class="problem" data-vocab-idx="${i}">
+          <div class="q"><span style="font-family:monospace; font-size:1.05rem;">${v.t}</span> — <span style="color:var(--muted);">${v.m}</span></div>
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <input type="text" id="vocab-${i}" placeholder="Напиши слово" autocomplete="off" autocapitalize="off" spellcheck="false" />
+          </div>
+          <div class="feedback-area"></div>
+        </div>
+      `).join('')}
+      <button class="primary" id="check-vocab-btn">Проверить слова</button>
+      <div id="vocab-result"></div>
+    </div>` : ''}
   `;
 
   document.getElementById('view').innerHTML = html;
@@ -416,7 +447,7 @@ function renderToday() {
       const parent = btn.closest('.problem');
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
-      parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Ошибка'}${d.problem.hint && !ok ? ` <div class="hint">💡 ${d.problem.hint}</div>` : ''}</div>`;
+      parent.querySelector('.feedback-area').innerHTML = renderFeedback(d.problem, ok);
       recordProblemResult(d.pid, ok);
     };
   });
@@ -432,13 +463,41 @@ function renderToday() {
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       const fb = parent.querySelector('.feedback-area');
-      fb.innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Ошибка'}${r.problem.hint && !ok ? ` <div class="hint">💡 ${r.problem.hint}</div>` : ''}</div>`;
+      fb.innerHTML = renderFeedback(r.problem, ok);
       recordProblemResult(r.pid, ok);
     };
   });
 
   // Проверка всего ДЗ
   document.getElementById('check-all-btn').onclick = () => checkAllProblems(key, day, problemsToShow);
+
+  // Проверка словарных слов
+  const vbtn = document.getElementById('check-vocab-btn');
+  if (vbtn) vbtn.onclick = () => checkAllVocab(vocabWords);
+}
+
+// Метка «ОГЭ» для задач формата экзамена
+function ogeBadge(p) {
+  return p && p.oge ? ` <span class="badge oge-badge">🎯 ОГЭ${p.ogeNum ? ' №' + p.ogeNum : ''}</span>` : '';
+}
+
+// Человекочитаемый правильный ответ задачи
+function correctAnswerText(p) {
+  if (p.type === 'choice') return p.options[p.correct];
+  if (p.type === 'text') return (p.accept && p.accept[0]) || '';
+  // number
+  const u = p.units ? ' ' + p.units : '';
+  return `${p.answer}${u}`;
+}
+
+// Блок «развёрнутый ответ»: вердикт + пошаговое решение + ответ
+function renderFeedback(p, ok) {
+  const verdict = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно' : '❌ Ошибка'}</div>`;
+  const solution = p.solution
+    ? `<div class="solution"><strong>Разбор:</strong><br>${p.solution}</div>`
+    : (p.hint ? `<div class="hint">💡 ${p.hint}</div>` : '');
+  const answer = `<div class="answer-line"><strong>Ответ:</strong> ${correctAnswerText(p)}</div>`;
+  return verdict + solution + answer;
 }
 
 function renderProblemInput(p, idPrefix) {
@@ -464,6 +523,7 @@ function getProblemValue(p, idPrefix) {
 
 function checkAllProblems(dayKey, day, problemsToShow) {
   let correct = 0;
+  let ogeTotal = 0, ogeCorrect = 0;
   const km = dayKey.match(/^w(\d+)d(\d+)$/);
   const wN = km ? km[1] : '0';
   const dN = km ? km[2] : '0';
@@ -474,9 +534,10 @@ function checkAllProblems(dayKey, day, problemsToShow) {
     parent.classList.remove('correct', 'wrong');
     parent.classList.add(ok ? 'correct' : 'wrong');
     const fb = parent.querySelector('.feedback-area');
-    fb.innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно' : '❌ Ошибка'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
+    fb.innerHTML = renderFeedback(p, ok);
     recordProblemResult(`prog.${day.subject}.w${wN}.d${dN}.p${i}`, ok);
     if (ok) correct++;
+    if (p.oge) { ogeTotal++; if (ok) ogeCorrect++; }
   });
 
   const percent = Math.round((correct / problemsToShow.length) * 100);
@@ -512,9 +573,73 @@ function checkAllProblems(dayKey, day, problemsToShow) {
     grade,
     percent,
     bonusType,
-    bonusText
+    bonusText,
+    ogeTotal,
+    ogeCorrect
   });
   saveState();
+}
+
+/* ============ Словарные слова (15 в день, каждый день) ============ */
+
+const VOCAB_PER_DAY = 15;
+
+// Подбор 15 слов на день: сначала «штрафные» слова (с ошибкой — 4 дня подряд), потом по кругу
+function getVocabForDay(linearDay) {
+  const list = window.VOCAB || [];
+  if (!list.length) return [];
+  if (!state.vocabRepeat) state.vocabRepeat = {};
+  const n = Math.min(VOCAB_PER_DAY, list.length);
+  const picked = [];
+  const seen = new Set();
+  // Слова, которые надо повторять после ошибки (vocabRepeat > 0)
+  list.forEach(v => {
+    if (picked.length >= n) return;
+    if ((state.vocabRepeat[v.w] || 0) > 0) { picked.push(v); seen.add(v.w); }
+  });
+  // Остальные — по кругу со сдвигом по дню
+  const offset = (linearDay * VOCAB_PER_DAY) % list.length;
+  for (let i = 0; i < list.length && picked.length < n; i++) {
+    const v = list[(offset + i) % list.length];
+    if (!seen.has(v.w)) { picked.push(v); seen.add(v.w); }
+  }
+  return picked;
+}
+
+function checkAllVocab(words) {
+  let correct = 0;
+  const today = isoDate(new Date());
+  if (!state.vocabRepeat) state.vocabRepeat = {};
+  if (!state.vocabLastDay) state.vocabLastDay = {};
+  words.forEach((v, i) => {
+    const inp = document.getElementById(`vocab-${i}`);
+    const ok = normalizeText(inp ? inp.value : '') === normalizeText(v.w);
+    const parent = document.querySelector(`.problem[data-vocab-idx="${i}"]`);
+    parent.classList.remove('correct', 'wrong');
+    parent.classList.add(ok ? 'correct' : 'wrong');
+
+    // Учёт повторения: один раз в день списываем день из «штрафа»
+    const firstCheckToday = state.vocabLastDay[v.w] !== today;
+    if (firstCheckToday && (state.vocabRepeat[v.w] || 0) > 0) {
+      state.vocabRepeat[v.w] -= 1;
+    }
+    // Ошибка — заново ставим слово на 4 дня подряд
+    if (!ok) state.vocabRepeat[v.w] = VOCAB_REPEAT_DAYS;
+    state.vocabLastDay[v.w] = today;
+
+    const leftDays = state.vocabRepeat[v.w] || 0;
+    const repeatNote = (!ok)
+      ? `<div class="hint">🔁 Это слово будет повторяться ещё ${VOCAB_REPEAT_DAYS} дня подряд.</div>`
+      : (leftDays > 0 ? `<div class="hint">🔁 Повторим ещё ${leftDays} дн.</div>` : '');
+    parent.querySelector('.feedback-area').innerHTML =
+      `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно' : '❌ Ошибка'}</div>` +
+      `<div class="answer-line"><strong>Правильно:</strong> ${v.w}</div>` + repeatNote;
+    recordProblemResult(`vocab.${v.w}`, ok);
+    if (ok) correct++;
+  });
+  saveState();
+  const el = document.getElementById('vocab-result');
+  if (el) el.innerHTML = `<div class="grade-card"><p class="score">Верно: ${correct} из ${words.length}</p></div>`;
 }
 
 function randomBonus() {
@@ -585,7 +710,7 @@ function renderSailing() {
       const parent = btn.closest('.problem');
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
-      parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}</div>`;
+      parent.querySelector('.feedback-area').innerHTML = renderFeedback(p, ok);
       recordProblemResult(`sail.${cid}.p${idx}`, ok);
     };
   });
@@ -733,9 +858,9 @@ function renderRussian() {
           <div class="theory">${w.theory}</div>
           <div style="font-size:0.85rem; color:var(--muted); margin-top:0.4rem;">📖 ${w.reference}</div>
           <br><a class="video-btn" href="${w.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
-          ${w.problems.map((p, j) => `
+          ${((window.RUSSIAN_BANK && window.RUSSIAN_BANK[w.week]) || w.problems).map((p, j) => `
             <div class="problem" data-rw="${w.week}" data-pidx="${j}">
-              <div class="q">${p.q}</div>
+              <div class="q">${p.q}${ogeBadge(p)}</div>
               ${renderProblemInput(p, `rus-w${w.week}-p${j}`)}
               <button class="secondary check-rus-btn" data-rw="${w.week}" data-pidx="${j}">Проверить</button>
               <div class="feedback-area"></div>
@@ -780,13 +905,14 @@ function renderRussian() {
       const wk = Number(btn.dataset.rw);
       const pidx = Number(btn.dataset.pidx);
       const week = window.RUSSIAN.weeks.find(w => w.week === wk);
-      const p = week.problems[pidx];
+      const probs = (window.RUSSIAN_BANK && window.RUSSIAN_BANK[wk]) || week.problems;
+      const p = probs[pidx];
       const value = getProblemValue(p, `rus-w${wk}-p${pidx}`);
       const ok = checkAnswer(p, value);
       const parent = btn.closest('.problem');
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
-      parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
+      parent.querySelector('.feedback-area').innerHTML = renderFeedback(p, ok);
       recordProblemResult(`rus.w${wk}.p${pidx}`, ok);
     };
   });
@@ -1061,6 +1187,14 @@ function renderProgress() {
   const avgGrade = hasHomework ? (state.history.reduce((s, h) => s + h.grade, 0) / total).toFixed(2) : '—';
   const fiveCount = state.history.filter(h => h.grade === 5).length;
   const bonusCount = state.history.filter(h => h.bonusType).length;
+  const ogeTotal = state.history.reduce((s, h) => s + (h.ogeTotal || 0), 0);
+  const ogeCorrect = state.history.reduce((s, h) => s + (h.ogeCorrect || 0), 0);
+  const ogePct = ogeTotal ? Math.round((ogeCorrect / ogeTotal) * 100) : 0;
+
+  const ogeCard = ogeTotal ? `
+    <div class="theory" style="border-left:3px solid #e8821a; background:#fff6ea;">
+      <strong>🎯 Задачи ОГЭ:</strong><br>${ogeCorrect} из ${ogeTotal} верно (${ogePct}%)
+    </div>` : '';
 
   const homeworkBlock = hasHomework ? `
     <div class="card">
@@ -1070,6 +1204,7 @@ function renderProgress() {
         <div class="theory"><strong>Средняя оценка:</strong><br>${avgGrade}</div>
         <div class="theory"><strong>Пятёрок:</strong><br>${fiveCount}</div>
         <div class="theory"><strong>Бонусов получено:</strong><br>${bonusCount}</div>
+        ${ogeCard}
       </div>
       <div class="chart-wrap">
         <h3>Оценки по дням</h3>
@@ -1351,8 +1486,8 @@ function renderSettings() {
       <h2>⚙️ Настройки</h2>
 
       <div class="settings-row">
-        <label><strong>Задач в ДЗ за день</strong><br><small>От 1 до 5 (в данных дня может быть меньше).</small></label>
-        <input type="number" id="set-ppd" min="1" max="5" value="${state.problemsPerDay}">
+        <label><strong>Задач в ДЗ за день</strong><br><small>От 1 до 8 (в данных дня может быть меньше).</small></label>
+        <input type="number" id="set-ppd" min="1" max="8" value="${state.problemsPerDay}">
       </div>
 
       <div class="settings-row">
@@ -1377,7 +1512,7 @@ function renderSettings() {
   `;
 
   document.getElementById('save-settings').onclick = () => {
-    const ppd = Math.max(1, Math.min(5, Number(document.getElementById('set-ppd').value)));
+    const ppd = Math.max(1, Math.min(8, Number(document.getElementById('set-ppd').value)));
     const start = document.getElementById('set-start').value;
     state.problemsPerDay = ppd;
     if (start) state.startDate = start;
