@@ -1294,27 +1294,9 @@ function renderSkills() {
 function renderDiary() {
   const sorted = [...state.history].sort((a, b) => (a.date + a.dayKey) < (b.date + b.dayKey) ? 1 : -1);
 
-  if (sorted.length === 0) {
-    document.getElementById('view').innerHTML = `
-      <div class="card"><h2>📓 Дневник</h2><p class="empty">Пока пусто — реши первое ДЗ во вкладке «Сегодня».</p></div>
-    `;
-    return;
-  }
-
-  const rows = sorted.map(h => {
-    const dateRu = parseISO(h.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' });
-    const subj = h.subject === 'physics' ? '⚡ Физика' : '📐 Математика';
-    return `<tr>
-      <td>${dateRu}</td>
-      <td>Н${h.week}д${h.dayNum}</td>
-      <td>${subj}</td>
-      <td>${h.topic}</td>
-      <td class="grade-cell g${h.grade}">${h.grade} (${h.percent}%)</td>
-      <td>${h.bonusType || '—'}</td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('view').innerHTML = `
+  const homeworkCard = sorted.length === 0
+    ? `<div class="card"><h2>📓 Дневник успеваемости</h2><p class="empty">Пока пусто — реши первое ДЗ во вкладке «Сегодня».</p></div>`
+    : `
     <div class="card">
       <h2>📓 Дневник успеваемости</h2>
       <p style="color:var(--muted); margin:0 0 0.6rem;">Всего записей: ${sorted.length}</p>
@@ -1322,6 +1304,97 @@ function renderDiary() {
         <table>
           <thead>
             <tr><th>Дата</th><th>День</th><th>Предмет</th><th>Тема</th><th>Оценка</th><th>Бонус</th></tr>
+          </thead>
+          <tbody>${sorted.map(h => {
+            const dateRu = parseISO(h.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' });
+            const subj = h.subject === 'physics' ? '⚡ Физика' : '📐 Математика';
+            return `<tr>
+              <td>${dateRu}</td>
+              <td>Н${h.week}д${h.dayNum}</td>
+              <td>${subj}</td>
+              <td>${h.topic}</td>
+              <td class="grade-cell g${h.grade}">${h.grade} (${h.percent}%)</td>
+              <td>${h.bonusType || '—'}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+
+  document.getElementById('view').innerHTML = homeworkCard + renderVocabHistoryCard();
+}
+
+/* ============ История словарных слов (в «Дневнике») ============ */
+
+function renderVocabHistoryCard() {
+  const lookup = {};
+  (window.VOCAB || []).forEach(v => { lookup[v.w] = v; });
+  const ph = state.problemHistory || {};
+
+  const entries = Object.keys(ph)
+    .filter(k => k.startsWith('vocab.'))
+    .map(k => {
+      const word = k.slice('vocab.'.length);
+      const hist = ph[k] || [];
+      const last = hist[hist.length - 1] || null;
+      const repeatLeft = (state.vocabRepeat && state.vocabRepeat[word]) || 0;
+      const lastDate = (last && last.date) || (state.vocabLastDay && state.vocabLastDay[word]) || null;
+      return {
+        word,
+        attempts: hist.length,
+        correct: hist.filter(x => x.ok).length,
+        lastOk: last ? last.ok : null,
+        lastDate,
+        repeatLeft,
+        meaning: (lookup[word] || {}).m || ''
+      };
+    });
+
+  if (entries.length === 0) {
+    return `<div class="card"><h2>📚 Словарные слова — история</h2><p class="empty">Пока нет. Напиши слова во вкладке «Сегодня» и нажми «Проверить слова».</p></div>`;
+  }
+
+  // Сначала слова на повторе (нужно внимание), потом по дате (свежие сверху)
+  entries.sort((a, b) => {
+    if ((a.repeatLeft > 0) !== (b.repeatLeft > 0)) return a.repeatLeft > 0 ? -1 : 1;
+    return (b.lastDate || '').localeCompare(a.lastDate || '');
+  });
+
+  const onRepeat = entries.filter(e => e.repeatLeft > 0).length;
+  const mastered = entries.filter(e => e.repeatLeft === 0 && e.lastOk === true).length;
+  const totalAttempts = entries.reduce((s, e) => s + e.attempts, 0);
+  const totalCorrect = entries.reduce((s, e) => s + e.correct, 0);
+  const pct = totalAttempts ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
+
+  const rows = entries.map(e => {
+    const dateRu = e.lastDate ? parseISO(e.lastDate).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—';
+    const lastMark = e.lastOk === true ? '✅' : (e.lastOk === false ? '❌' : '—');
+    const status = e.repeatLeft > 0
+      ? `<span class="badge" style="background:#ffe5e5;">🔁 на повторе: ${e.repeatLeft} дн.</span>`
+      : (e.lastOk === true ? `<span class="badge" style="background:#e3f5e8;">✅ выучено</span>` : '<span class="badge">—</span>');
+    return `<tr>
+      <td><strong>${e.word}</strong></td>
+      <td style="color:var(--muted);">${e.meaning}</td>
+      <td>${lastMark}</td>
+      <td>${e.correct}/${e.attempts}</td>
+      <td>${status}</td>
+      <td>${dateRu}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="card">
+      <h2>📚 Словарные слова — история</h2>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:0.7rem; margin-bottom:0.8rem;">
+        <div class="theory"><strong>Слов отработано:</strong><br>${entries.length}</div>
+        <div class="theory"><strong>Выучено:</strong><br>${mastered}</div>
+        <div class="theory"><strong>На повторе сейчас:</strong><br>${onRepeat}</div>
+        <div class="theory"><strong>Верно ответов:</strong><br>${totalCorrect} из ${totalAttempts} (${pct}%)</div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr><th>Слово</th><th>Значение</th><th>Посл.</th><th>Верно/попыток</th><th>Статус</th><th>Дата</th></tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
