@@ -17,7 +17,8 @@ const DEFAULT_STATE = {
   schemaV2: false,                         // флаг миграции (8 задач/день)
   vocabRepeat: {},                         // {слово: сколько дней ещё показывать (после ошибки = 4)}
   vocabLastDay: {},                        // {слово: ISO-дата последнего показа в опросе}
-  vocabAnswers: {}                         // {ISO-дата: {слово: {value, ok}}} — чтобы ответы не исчезали после обновления
+  vocabAnswers: {},                        // {ISO-дата: {слово: {value, ok}}} — чтобы ответы не исчезали после обновления
+  practiceAnswers: {}                      // {idPrefix: {value, ok, checked}} — ответы на вкладках-тренажёрах
 };
 
 const VOCAB_REPEAT_DAYS = 4;               // слово с ошибкой повторяется столько дней подряд
@@ -593,6 +594,51 @@ function getProblemValue(p, idPrefix) {
   return document.getElementById(idPrefix)?.value || '';
 }
 
+/* ============ Автосохранение ответов на вкладках-тренажёрах ============ */
+// Единое хранилище по ключу-идентификатору поля (idPrefix), общее для всех тренажёров.
+
+function practiceRestore(p, idPrefix) {
+  const sa = (state.practiceAnswers && state.practiceAnswers[idPrefix]) || null;
+  return {
+    val: sa ? sa.value : undefined,
+    cls: sa && sa.checked ? (sa.ok ? ' correct' : ' wrong') : '',
+    fb: sa && sa.checked ? renderFeedback(p, sa.ok) : ''
+  };
+}
+
+function savePracticeValue(idPrefix, value) {
+  if (!state.practiceAnswers) state.practiceAnswers = {};
+  const cur = state.practiceAnswers[idPrefix] || {};
+  cur.value = value;
+  state.practiceAnswers[idPrefix] = cur;
+  saveState();
+}
+
+function savePracticeResult(idPrefix, value, ok) {
+  if (!state.practiceAnswers) state.practiceAnswers = {};
+  state.practiceAnswers[idPrefix] = { value, ok, checked: true };
+  saveState();
+}
+
+// Подключает автосохранение ко всем полям внутри контейнера (текст/число и радио-группы)
+function wirePracticeAutosave(container) {
+  if (!container) return;
+  container.querySelectorAll('input[type="text"], input[type="number"]').forEach(el => {
+    if (!el.id) return;
+    el.addEventListener('input', () => savePracticeValue(el.id, el.value));
+  });
+  const radioNames = new Set();
+  container.querySelectorAll('input[type="radio"]').forEach(r => { if (r.name) radioNames.add(r.name); });
+  radioNames.forEach(name => {
+    container.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+      r.addEventListener('change', () => {
+        const sel = container.querySelector(`input[name="${name}"]:checked`);
+        savePracticeValue(name, sel ? sel.value : null);
+      });
+    });
+  });
+}
+
 function checkAllProblems(dayKey, day, problemsToShow) {
   let correct = 0;
   let ogeTotal = 0, ogeCorrect = 0;
@@ -755,14 +801,18 @@ function renderSailing() {
               </div>
             `).join('')}
             <h3>🧪 Мини-тест</h3>
-            ${cat.test.map((p, i) => `
-              <div class="problem" data-cat="${cat.id}" data-test-idx="${i}">
+            ${cat.test.map((p, i) => {
+              const id = `sail-${cat.id}-${i}`;
+              const r = practiceRestore(p, id);
+              return `
+              <div class="problem${r.cls}" data-cat="${cat.id}" data-test-idx="${i}">
                 <div class="q">${p.q}</div>
-                ${renderProblemInput(p, `sail-${cat.id}-${i}`)}
+                ${renderProblemInput(p, id, r.val)}
                 <button class="secondary check-sail-btn" data-cat="${cat.id}" data-idx="${i}">Проверить</button>
-                <div class="feedback-area"></div>
+                <div class="feedback-area">${r.fb}</div>
               </div>
-            `).join('')}
+            `;
+            }).join('')}
           </div>
         </div>
       `).join('')}
@@ -779,19 +829,23 @@ function renderSailing() {
     };
   });
 
+  wirePracticeAutosave(document.getElementById('view'));
+
   document.querySelectorAll('.check-sail-btn').forEach(btn => {
     btn.onclick = () => {
       const cid = btn.dataset.cat;
       const idx = Number(btn.dataset.idx);
       const cat = SAILING.categories.find(c => c.id === cid);
       const p = cat.test[idx];
-      const value = getProblemValue(p, `sail-${cid}-${idx}`);
+      const id = `sail-${cid}-${idx}`;
+      const value = getProblemValue(p, id);
       const ok = checkAnswer(p, value);
       const parent = btn.closest('.problem');
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = renderFeedback(p, ok);
       recordProblemResult(`sail.${cid}.p${idx}`, ok);
+      savePracticeResult(id, value, ok);
     };
   });
 }
@@ -820,14 +874,18 @@ function renderPhysics() {
               <div class="theory">${d.theory}</div>
               <div style="font-size:0.85rem; color:var(--muted); margin-top:0.4rem;">📖 ${d.reference || ''}</div>
               <br><a class="video-btn" href="${d.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
-              ${probs.map((p, j) => `
-                <div class="problem" data-pw="${week.number}" data-pd="${d.dayNum}" data-pidx="${j}">
+              ${probs.map((p, j) => {
+                const id = `phys-w${week.number}-d${d.dayNum}-p${j}`;
+                const r = practiceRestore(p, id);
+                return `
+                <div class="problem${r.cls}" data-pw="${week.number}" data-pd="${d.dayNum}" data-pidx="${j}">
                   <div class="q">${p.q}${ogeBadge(p)}</div>
-                  ${renderProblemInput(p, `phys-w${week.number}-d${d.dayNum}-p${j}`)}
+                  ${renderProblemInput(p, id, r.val)}
                   <button class="secondary check-phys-btn" data-pw="${week.number}" data-pd="${d.dayNum}" data-pidx="${j}">Проверить</button>
-                  <div class="feedback-area"></div>
+                  <div class="feedback-area">${r.fb}</div>
                 </div>
-              `).join('')}
+              `;
+              }).join('')}
             </div>
           `;
           }).join('')}
@@ -854,6 +912,8 @@ function renderPhysics() {
     };
   });
 
+  wirePracticeAutosave(document.getElementById('view'));
+
   document.querySelectorAll('.check-phys-btn').forEach(btn => {
     btn.onclick = () => {
       const pw = Number(btn.dataset.pw);
@@ -863,13 +923,15 @@ function renderPhysics() {
       const day = week.days.find(x => x.dayNum === pd);
       const probs = (window.PROBLEM_BANK && window.PROBLEM_BANK[`w${pw}d${pd}`]) || day.problems;
       const p = probs[pidx];
-      const value = getProblemValue(p, `phys-w${pw}-d${pd}-p${pidx}`);
+      const id = `phys-w${pw}-d${pd}-p${pidx}`;
+      const value = getProblemValue(p, id);
       const ok = checkAnswer(p, value);
       const parent = btn.closest('.problem');
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = renderFeedback(p, ok);
       recordProblemResult(`prog.physics.w${pw}.d${pd}.p${pidx}`, ok);
+      savePracticeResult(id, value, ok);
     };
   });
 }
@@ -927,14 +989,18 @@ function renderMath() {
               <div class="theory">${d.theory}</div>
               <div style="font-size:0.85rem; color:var(--muted); margin-top:0.4rem;">📖 ${d.reference || ''}</div>
               <br><a class="video-btn" href="${d.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
-              ${d.problems.map((p, j) => `
-                <div class="problem" data-mw="${week.number}" data-md="${d.dayNum}" data-pidx="${j}">
+              ${d.problems.map((p, j) => {
+                const id = `math-w${week.number}-d${d.dayNum}-p${j}`;
+                const r = practiceRestore(p, id);
+                return `
+                <div class="problem${r.cls}" data-mw="${week.number}" data-md="${d.dayNum}" data-pidx="${j}">
                   <div class="q">${p.q}</div>
-                  ${renderProblemInput(p, `math-w${week.number}-d${d.dayNum}-p${j}`)}
+                  ${renderProblemInput(p, id, r.val)}
                   <button class="secondary check-math-btn" data-mw="${week.number}" data-md="${d.dayNum}" data-pidx="${j}">Проверить</button>
-                  <div class="feedback-area"></div>
+                  <div class="feedback-area">${r.fb}</div>
                 </div>
-              `).join('')}
+              `;
+              }).join('')}
             </div>
           `).join('')}
         </div>
@@ -971,6 +1037,8 @@ function renderMath() {
     };
   });
 
+  wirePracticeAutosave(document.getElementById('view'));
+
   document.querySelectorAll('.check-math-btn').forEach(btn => {
     btn.onclick = () => {
       const mw = Number(btn.dataset.mw);
@@ -979,13 +1047,15 @@ function renderMath() {
       const week = PROGRAM.weeks[mw - 1];
       const day = week.days.find(x => x.dayNum === md);
       const p = day.problems[pidx];
-      const value = getProblemValue(p, `math-w${mw}-d${md}-p${pidx}`);
+      const id = `math-w${mw}-d${md}-p${pidx}`;
+      const value = getProblemValue(p, id);
       const ok = checkAnswer(p, value);
       const parent = btn.closest('.problem');
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
-      parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
+      parent.querySelector('.feedback-area').innerHTML = renderFeedback(p, ok);
       recordProblemResult(`prog.math.w${mw}.d${md}.p${pidx}`, ok);
+      savePracticeResult(id, value, ok);
     };
   });
 }
@@ -1016,14 +1086,18 @@ function renderRussian() {
           <div class="theory">${w.theory}</div>
           <div style="font-size:0.85rem; color:var(--muted); margin-top:0.4rem;">📖 ${w.reference}</div>
           <br><a class="video-btn" href="${w.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
-          ${((window.RUSSIAN_BANK && window.RUSSIAN_BANK[w.week]) || w.problems).map((p, j) => `
-            <div class="problem" data-rw="${w.week}" data-pidx="${j}">
+          ${((window.RUSSIAN_BANK && window.RUSSIAN_BANK[w.week]) || w.problems).map((p, j) => {
+            const id = `rus-w${w.week}-p${j}`;
+            const r = practiceRestore(p, id);
+            return `
+            <div class="problem${r.cls}" data-rw="${w.week}" data-pidx="${j}">
               <div class="q">${p.q}${ogeBadge(p)}</div>
-              ${renderProblemInput(p, `rus-w${w.week}-p${j}`)}
+              ${renderProblemInput(p, id, r.val)}
               <button class="secondary check-rus-btn" data-rw="${w.week}" data-pidx="${j}">Проверить</button>
-              <div class="feedback-area"></div>
+              <div class="feedback-area">${r.fb}</div>
             </div>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
       </div>
     `;
@@ -1058,6 +1132,8 @@ function renderRussian() {
     };
   });
 
+  wirePracticeAutosave(document.getElementById('view'));
+
   document.querySelectorAll('.check-rus-btn').forEach(btn => {
     btn.onclick = () => {
       const wk = Number(btn.dataset.rw);
@@ -1065,13 +1141,15 @@ function renderRussian() {
       const week = window.RUSSIAN.weeks.find(w => w.week === wk);
       const probs = (window.RUSSIAN_BANK && window.RUSSIAN_BANK[wk]) || week.problems;
       const p = probs[pidx];
-      const value = getProblemValue(p, `rus-w${wk}-p${pidx}`);
+      const id = `rus-w${wk}-p${pidx}`;
+      const value = getProblemValue(p, id);
       const ok = checkAnswer(p, value);
       const parent = btn.closest('.problem');
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = renderFeedback(p, ok);
       recordProblemResult(`rus.w${wk}.p${pidx}`, ok);
+      savePracticeResult(id, value, ok);
     };
   });
 }
@@ -1103,14 +1181,18 @@ function renderInformatics() {
               <div class="theory" style="margin-top:0.3rem;">${w.theory}</div>
               <div style="font-size:0.85rem; color:var(--muted); margin-top:0.4rem;">📖 ${w.reference}</div>
               <br><a class="video-btn" href="${w.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
-              ${w.problems.map((p, j) => `
-                <div class="problem" data-track="${track.id}" data-week="${w.week}" data-pidx="${j}">
+              ${w.problems.map((p, j) => {
+                const id = `inf-${track.id}-w${w.week}-p${j}`;
+                const r = practiceRestore(p, id);
+                return `
+                <div class="problem${r.cls}" data-track="${track.id}" data-week="${w.week}" data-pidx="${j}">
                   <div class="q">${p.q}</div>
-                  ${renderProblemInput(p, `inf-${track.id}-w${w.week}-p${j}`)}
+                  ${renderProblemInput(p, id, r.val)}
                   <button class="secondary check-inf-btn" data-track="${track.id}" data-week="${w.week}" data-pidx="${j}">Проверить</button>
-                  <div class="feedback-area"></div>
+                  <div class="feedback-area">${r.fb}</div>
                 </div>
-              `).join('')}
+              `;
+              }).join('')}
             </div>
           `).join('')}
         </div>
@@ -1155,6 +1237,8 @@ function renderInformatics() {
     };
   });
 
+  wirePracticeAutosave(document.getElementById('view'));
+
   document.querySelectorAll('.check-inf-btn').forEach(btn => {
     btn.onclick = () => {
       const tid = btn.dataset.track;
@@ -1163,13 +1247,15 @@ function renderInformatics() {
       const track = window.INFORMATICS.tracks[tid];
       const week = track.weeks.find(w => w.week === wk);
       const p = week.problems[pidx];
-      const value = getProblemValue(p, `inf-${tid}-w${wk}-p${pidx}`);
+      const id = `inf-${tid}-w${wk}-p${pidx}`;
+      const value = getProblemValue(p, id);
       const ok = checkAnswer(p, value);
       const parent = btn.closest('.problem');
       parent.classList.remove('correct', 'wrong');
       parent.classList.add(ok ? 'correct' : 'wrong');
-      parent.querySelector('.feedback-area').innerHTML = `<div class="feedback ${ok ? 'ok' : 'bad'}">${ok ? '✅ Верно!' : '❌ Попробуй ещё'}${p.hint && !ok ? ` <div class="hint">💡 ${p.hint}</div>` : ''}</div>`;
+      parent.querySelector('.feedback-area').innerHTML = renderFeedback(p, ok);
       recordProblemResult(`inf.${tid}.w${wk}.p${pidx}`, ok);
+      savePracticeResult(id, value, ok);
     };
   });
 }
