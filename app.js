@@ -270,9 +270,10 @@ function getDueRepeatProblems(maxN) {
 
 /* ============ Рендер: вкладки ============ */
 
-const TABS = ['today', 'math', 'russian', 'informatics', 'sailing', 'skills', 'diary', 'progress', 'settings'];
+const TABS = ['today', 'physics', 'math', 'russian', 'informatics', 'sailing', 'skills', 'diary', 'progress', 'settings'];
 const TAB_LABELS = {
   today: '📚 Сегодня',
+  physics: '⚡ Физика',
   math: '📐 Математика',
   russian: '📝 Русский',
   informatics: '💻 Информатика',
@@ -354,20 +355,24 @@ function renderToday() {
     </div>
   ` : '';
 
+  const isToday = !state.viewedDayKey;
+
   const html = `
+    <div class="card daynav">
+      <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+        <strong style="margin-right:auto;">📅 Листать учебные дни:</strong>
+        <button class="primary" id="prev-day" ${prevKey ? '' : 'disabled'}>← Предыдущий день</button>
+        <button class="secondary" id="goto-today" ${isToday ? 'disabled' : ''}>📍 Сегодня</button>
+        <button class="primary" id="next-day" ${nextKey ? '' : 'disabled'}>Следующий день →</button>
+      </div>
+      ${!isToday ? `<p style="margin:0.5rem 0 0; color:var(--muted); font-size:0.9rem;">Ты смотришь другой день программы (Неделя ${wIdx + 1}, день ${dNum}). Нажми «📍 Сегодня», чтобы вернуться к текущему.</p>` : ''}
+    </div>
     ${repeatHtml}
     <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
-        <div>
-          <span class="badge">Неделя ${wIdx + 1}</span>
-          <span class="badge">${day.weekday}, день ${dNum}</span>
-          <span class="badge ${subjectCls}">${subjectBadge}</span>
-        </div>
-        <div>
-          <button class="secondary" id="prev-day" ${prevKey ? '' : 'disabled'}>← Назад</button>
-          <button class="secondary" id="next-day" ${nextKey ? '' : 'disabled'}>Вперёд →</button>
-          <button class="secondary" id="goto-today">Сегодня</button>
-        </div>
+      <div>
+        <span class="badge">Неделя ${wIdx + 1}</span>
+        <span class="badge">${day.weekday}, день ${dNum}</span>
+        <span class="badge ${subjectCls}">${subjectBadge}</span>
       </div>
       <h2 style="margin-top:0.8rem;">${day.topic}</h2>
       <div class="theory">${day.theory}</div>
@@ -712,6 +717,84 @@ function renderSailing() {
       parent.classList.add(ok ? 'correct' : 'wrong');
       parent.querySelector('.feedback-area').innerHTML = renderFeedback(p, ok);
       recordProblemResult(`sail.${cid}.p${idx}`, ok);
+    };
+  });
+}
+
+/* ============ Вкладка «Физика» ============ */
+
+let openPhysicsWeeks = new Set([1]);
+
+function renderPhysics() {
+  const weeksHtml = PROGRAM.weeks.map(week => {
+    const isOpen = openPhysicsWeeks.has(week.number);
+    const physDays = week.days.filter(d => d.subject === 'physics');
+    if (physDays.length === 0) return '';
+    return `
+      <div class="sailing-cat ${isOpen ? 'open' : ''}" data-pweek="${week.number}">
+        <div class="sailing-cat-head">
+          <span>Неделя ${week.number}: ${week.theme}</span>
+          <span>${isOpen ? '▼' : '▶'}</span>
+        </div>
+        <div class="sailing-cat-body">
+          ${physDays.map(d => {
+            const probs = (window.PROBLEM_BANK && window.PROBLEM_BANK[`w${week.number}d${d.dayNum}`]) || d.problems;
+            return `
+            <div class="sailing-lesson">
+              <h4>${d.weekday}: ${d.topic}</h4>
+              <div class="theory">${d.theory}</div>
+              <div style="font-size:0.85rem; color:var(--muted); margin-top:0.4rem;">📖 ${d.reference || ''}</div>
+              <br><a class="video-btn" href="${d.videoUrl}" target="_blank" rel="noopener">▶ Видео</a>
+              ${probs.map((p, j) => `
+                <div class="problem" data-pw="${week.number}" data-pd="${d.dayNum}" data-pidx="${j}">
+                  <div class="q">${p.q}${ogeBadge(p)}</div>
+                  ${renderProblemInput(p, `phys-w${week.number}-d${d.dayNum}-p${j}`)}
+                  <button class="secondary check-phys-btn" data-pw="${week.number}" data-pd="${d.dayNum}" data-pidx="${j}">Проверить</button>
+                  <div class="feedback-area"></div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('view').innerHTML = `
+    <div class="card">
+      <h2>⚡ Физика — программа курса</h2>
+      <p style="color:var(--muted); margin:0 0 0.6rem;">Все физические дни (Пн, Ср, Пт каждой недели). Открывай любую неделю и тренируйся в своём темпе — с теорией, видео, задачами ОГЭ и разбором.</p>
+      ${weeksHtml}
+    </div>
+  `;
+
+  document.querySelectorAll('[data-pweek]').forEach(div => {
+    const head = div.querySelector('.sailing-cat-head');
+    if (head) head.onclick = () => {
+      const n = Number(div.dataset.pweek);
+      if (openPhysicsWeeks.has(n)) openPhysicsWeeks.delete(n);
+      else openPhysicsWeeks.add(n);
+      renderPhysics();
+    };
+  });
+
+  document.querySelectorAll('.check-phys-btn').forEach(btn => {
+    btn.onclick = () => {
+      const pw = Number(btn.dataset.pw);
+      const pd = Number(btn.dataset.pd);
+      const pidx = Number(btn.dataset.pidx);
+      const week = PROGRAM.weeks[pw - 1];
+      const day = week.days.find(x => x.dayNum === pd);
+      const probs = (window.PROBLEM_BANK && window.PROBLEM_BANK[`w${pw}d${pd}`]) || day.problems;
+      const p = probs[pidx];
+      const value = getProblemValue(p, `phys-w${pw}-d${pd}-p${pidx}`);
+      const ok = checkAnswer(p, value);
+      const parent = btn.closest('.problem');
+      parent.classList.remove('correct', 'wrong');
+      parent.classList.add(ok ? 'correct' : 'wrong');
+      parent.querySelector('.feedback-area').innerHTML = renderFeedback(p, ok);
+      recordProblemResult(`prog.physics.w${pw}.d${pd}.p${pidx}`, ok);
     };
   });
 }
@@ -1568,6 +1651,7 @@ function render() {
   renderHeader();
   renderTabs();
   if (currentTab === 'today')       renderToday();
+  if (currentTab === 'physics')     renderPhysics();
   if (currentTab === 'math')        renderMath();
   if (currentTab === 'russian')     renderRussian();
   if (currentTab === 'informatics') renderInformatics();

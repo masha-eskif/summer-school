@@ -82,6 +82,14 @@ main {
   margin-bottom: 1.2rem;
 }
 
+.card.daynav {
+  background: var(--wave);
+  border: 1px solid var(--border);
+  padding: 0.8rem 1rem;
+}
+.card.daynav .primary,
+.card.daynav .secondary { padding: 0.5rem 0.8rem; }
+
 .card h2 {
   margin-top: 0;
   color: var(--sea-deep);
