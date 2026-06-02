@@ -16,7 +16,8 @@ const DEFAULT_STATE = {
   languageLessons: [],                     // [{id, date, language: 'en'|'de', minutes, topics}]
   schemaV2: false,                         // флаг миграции (8 задач/день)
   vocabRepeat: {},                         // {слово: сколько дней ещё показывать (после ошибки = 4)}
-  vocabLastDay: {}                         // {слово: ISO-дата последнего показа в опросе}
+  vocabLastDay: {},                        // {слово: ISO-дата последнего показа в опросе}
+  vocabAnswers: {}                         // {ISO-дата: {слово: {value, ok}}} — чтобы ответы не исчезали после обновления
 };
 
 const VOCAB_REPEAT_DAYS = 4;               // слово с ошибкой повторяется столько дней подряд
@@ -338,6 +339,13 @@ function renderToday() {
   const problemsToShow = dayProblems.slice(0, state.problemsPerDay);
   const dueProblems = getDueRepeatProblems(MAX_REPEAT_PROBLEMS);
   const vocabWords = getVocabForDay(linear);
+  const todayISO = isoDate(new Date());
+  const savedVocab = (state.vocabAnswers && state.vocabAnswers[todayISO]) || {};
+  const answeredVocab = vocabWords.filter(v => savedVocab[v.w]);
+  const correctVocab = answeredVocab.filter(v => savedVocab[v.w].ok);
+  const savedVocabSummary = answeredVocab.length > 0
+    ? `<div class="grade-card"><p class="score">Верно: ${correctVocab.length} из ${vocabWords.length}</p></div>`
+    : '';
 
   const repeatHtml = dueProblems.length > 0 ? `
     <div class="card">
@@ -421,17 +429,25 @@ function renderToday() {
     <div class="card">
       <h2>📚 Словарные слова дня <span class="badge">${vocabWords.length}</span></h2>
       <p style="color:var(--muted); margin:0 0 0.5rem;">Прочитай транскрипцию и значение — напиши слово правильно. Это каждый день, даже когда нет русского. Если ошиблась — слово будет повторяться 4 дня подряд, пока не запомнишь.</p>
-      ${vocabWords.map((v, i) => `
-        <div class="problem" data-vocab-idx="${i}">
+      ${vocabWords.map((v, i) => {
+        const sa = savedVocab[v.w];
+        const cls = sa ? (sa.ok ? ' correct' : ' wrong') : '';
+        const val = sa ? ` value="${escapeHtml(sa.value)}"` : '';
+        const fb = sa
+          ? `<div class="feedback ${sa.ok ? 'ok' : 'bad'}">${sa.ok ? '✅ Верно' : '❌ Ошибка'}</div><div class="answer-line"><strong>Правильно:</strong> ${v.w}</div>`
+          : '';
+        return `
+        <div class="problem${cls}" data-vocab-idx="${i}">
           <div class="q"><span style="font-family:monospace; font-size:1.05rem;">${v.t}</span> — <span style="color:var(--muted);">${v.m}</span></div>
           <div style="display:flex; align-items:center; gap:0.4rem;">
-            <input type="text" id="vocab-${i}" placeholder="Напиши слово" autocomplete="off" autocapitalize="off" spellcheck="false" />
+            <input type="text" id="vocab-${i}"${val} placeholder="Напиши слово" autocomplete="off" autocapitalize="off" spellcheck="false" />
           </div>
-          <div class="feedback-area"></div>
+          <div class="feedback-area">${fb}</div>
         </div>
-      `).join('')}
+      `;
+      }).join('')}
       <button class="primary" id="check-vocab-btn">Проверить слова</button>
-      <div id="vocab-result"></div>
+      <div id="vocab-result">${savedVocabSummary}</div>
     </div>` : ''}
   `;
 
@@ -616,9 +632,12 @@ function checkAllVocab(words) {
   const today = isoDate(new Date());
   if (!state.vocabRepeat) state.vocabRepeat = {};
   if (!state.vocabLastDay) state.vocabLastDay = {};
+  if (!state.vocabAnswers) state.vocabAnswers = {};
+  const todaysVocab = {};
   words.forEach((v, i) => {
     const inp = document.getElementById(`vocab-${i}`);
     const ok = normalizeText(inp ? inp.value : '') === normalizeText(v.w);
+    todaysVocab[v.w] = { value: inp ? inp.value : '', ok };
     const parent = document.querySelector(`.problem[data-vocab-idx="${i}"]`);
     parent.classList.remove('correct', 'wrong');
     parent.classList.add(ok ? 'correct' : 'wrong');
@@ -642,6 +661,8 @@ function checkAllVocab(words) {
     recordProblemResult(`vocab.${v.w}`, ok);
     if (ok) correct++;
   });
+  // Сохраняем введённые ответы только за сегодня (старые дни не храним)
+  state.vocabAnswers = { [today]: todaysVocab };
   saveState();
   const el = document.getElementById('vocab-result');
   if (el) el.innerHTML = `<div class="grade-card"><p class="score">Верно: ${correct} из ${words.length}</p></div>`;
