@@ -1160,7 +1160,7 @@ let openInformaticsTracks = new Set(['oge']);
 
 function renderInformatics() {
   const I = window.INFORMATICS;
-  const tracks = [I.tracks.oge, I.tracks.python];
+  const tracks = [I.tracks.oge, I.tracks.python, I.tracks.arduino];
 
   const trackHtml = tracks.map(track => {
     const isOpen = openInformaticsTracks.has(track.id);
@@ -1221,7 +1221,7 @@ function renderInformatics() {
   document.getElementById('view').innerHTML = `
     <div class="card">
       <h2>💻 Информатика</h2>
-      <p style="color:var(--muted); margin:0 0 0.6rem;">Две дорожки: подготовка к ОГЭ (Пн утром, 1 час) и Python с нуля (Ср утром, 1.5 часа). Кликни по дорожке, чтобы раскрыть.</p>
+      <p style="color:var(--muted); margin:0 0 0.6rem;">Три дорожки: подготовка к ОГЭ (Пн утром, 1 час), Python с нуля (Ср утром, 1.5 часа) и Arduino-электроника (выходные / свободный вечер). Кликни по дорожке, чтобы раскрыть.</p>
       ${trackHtml}
     </div>
     ${aiHtml}
