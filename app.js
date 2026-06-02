@@ -340,8 +340,18 @@ function renderToday() {
   const dueProblems = getDueRepeatProblems(MAX_REPEAT_PROBLEMS);
   const vocabWords = getVocabForDay(linear);
   const todayISO = isoDate(new Date());
+
+  // Сохранённые ответы по ДЗ за этот день (восстанавливаем при переключении вкладок / обновлении)
+  const savedHw = (state.todayAnswers && state.todayAnswers[key]) || {};
+  const hwCheckedAll = problemsToShow.length > 0 && problemsToShow.every((p, i) => savedHw[i] && savedHw[i].checked);
+  const hwCorrect = problemsToShow.filter((p, i) => savedHw[i] && savedHw[i].ok).length;
+  const hwPercent = problemsToShow.length ? Math.round((hwCorrect / problemsToShow.length) * 100) : 0;
+  const hwSummary = hwCheckedAll
+    ? `<div class="grade-card"><p class="grade">${gradeFromPercent(hwPercent)}</p><p class="score">Правильно: ${hwCorrect} из ${problemsToShow.length} (${hwPercent}%)</p></div>`
+    : '';
+
   const savedVocab = (state.vocabAnswers && state.vocabAnswers[todayISO]) || {};
-  const answeredVocab = vocabWords.filter(v => savedVocab[v.w]);
+  const answeredVocab = vocabWords.filter(v => savedVocab[v.w] && savedVocab[v.w].checked);
   const correctVocab = answeredVocab.filter(v => savedVocab[v.w].ok);
   const savedVocabSummary = answeredVocab.length > 0
     ? `<div class="grade-card"><p class="score">Верно: ${correctVocab.length} из ${vocabWords.length}</p></div>`
@@ -413,16 +423,22 @@ function renderToday() {
 
     <div class="card">
       <h2>📝 Домашнее задание</h2>
-      <p style="color:var(--muted); margin:0 0 0.5rem;">Заполни ответы и нажми «Проверить ДЗ» внизу.</p>
-      ${problemsToShow.map((p, i) => `
-        <div class="problem" data-prob-idx="${i}">
+      <p style="color:var(--muted); margin:0 0 0.5rem;">Заполни ответы и нажми «Проверить ДЗ» внизу. Ответы сохраняются сами — можно переключать вкладки, ничего не потеряется.</p>
+      ${problemsToShow.map((p, i) => {
+        const sa = savedHw[i];
+        const checked = sa && sa.checked;
+        const cls = checked ? (sa.ok ? ' correct' : ' wrong') : '';
+        const fb = checked ? renderFeedback(p, sa.ok) : '';
+        return `
+        <div class="problem${cls}" data-prob-idx="${i}">
           <div class="q">№${i + 1}. ${p.q}${ogeBadge(p)}</div>
-          ${renderProblemInput(p, `prob-${i}`)}
-          <div class="feedback-area"></div>
+          ${renderProblemInput(p, `prob-${i}`, sa ? sa.value : undefined)}
+          <div class="feedback-area">${fb}</div>
         </div>
-      `).join('')}
+      `;
+      }).join('')}
       <button class="primary" id="check-all-btn">Проверить ДЗ</button>
-      <div id="result-area"></div>
+      <div id="result-area">${hwSummary}</div>
     </div>
 
     ${vocabWords.length > 0 ? `
@@ -431,9 +447,10 @@ function renderToday() {
       <p style="color:var(--muted); margin:0 0 0.5rem;">Прочитай транскрипцию и значение — напиши слово правильно. Это каждый день, даже когда нет русского. Если ошиблась — слово будет повторяться 4 дня подряд, пока не запомнишь.</p>
       ${vocabWords.map((v, i) => {
         const sa = savedVocab[v.w];
-        const cls = sa ? (sa.ok ? ' correct' : ' wrong') : '';
-        const val = sa ? ` value="${escapeHtml(sa.value)}"` : '';
-        const fb = sa
+        const checked = sa && sa.checked;
+        const cls = checked ? (sa.ok ? ' correct' : ' wrong') : '';
+        const val = sa && sa.value ? ` value="${escapeHtml(sa.value)}"` : '';
+        const fb = checked
           ? `<div class="feedback ${sa.ok ? 'ok' : 'bad'}">${sa.ok ? '✅ Верно' : '❌ Ошибка'}</div><div class="answer-line"><strong>Правильно:</strong> ${v.w}</div>`
           : '';
         return `
@@ -457,6 +474,38 @@ function renderToday() {
   if (prevKey) document.getElementById('prev-day').onclick = () => { state.viewedDayKey = prevKey; saveState(); render(); };
   if (nextKey) document.getElementById('next-day').onclick = () => { state.viewedDayKey = nextKey; saveState(); render(); };
   document.getElementById('goto-today').onclick = () => { state.viewedDayKey = null; saveState(); render(); };
+
+  // Автосохранение введённых ответов ДЗ во время ввода (чтобы не терялись при переключении вкладок)
+  function persistHwValue(i, p) {
+    if (!state.todayAnswers) state.todayAnswers = {};
+    if (!state.todayAnswers[key]) state.todayAnswers[key] = {};
+    const cur = state.todayAnswers[key][i] || {};
+    cur.value = getProblemValue(p, `prob-${i}`);
+    state.todayAnswers[key][i] = cur;
+    saveState();
+  }
+  problemsToShow.forEach((p, i) => {
+    if (p.type === 'choice') {
+      document.querySelectorAll(`input[name="prob-${i}"]`).forEach(r => r.addEventListener('change', () => persistHwValue(i, p)));
+    } else {
+      const el = document.getElementById(`prob-${i}`);
+      if (el) el.addEventListener('input', () => persistHwValue(i, p));
+    }
+  });
+
+  // Автосохранение введённых словарных слов во время ввода
+  vocabWords.forEach((v, i) => {
+    const el = document.getElementById(`vocab-${i}`);
+    if (!el) return;
+    el.addEventListener('input', () => {
+      if (!state.vocabAnswers) state.vocabAnswers = {};
+      if (!state.vocabAnswers[todayISO]) state.vocabAnswers[todayISO] = {};
+      const cur = state.vocabAnswers[todayISO][v.w] || {};
+      cur.value = el.value;
+      state.vocabAnswers[todayISO][v.w] = cur;
+      saveState();
+    });
+  });
 
   // Проверка задач из «На повторение»
   document.querySelectorAll('.check-repeat-btn').forEach(btn => {
@@ -521,16 +570,18 @@ function renderFeedback(p, ok) {
   return verdict + solution + answer;
 }
 
-function renderProblemInput(p, idPrefix) {
+function renderProblemInput(p, idPrefix, savedValue) {
+  const has = savedValue !== undefined && savedValue !== null && savedValue !== '';
   if (p.type === 'choice') {
     return `<div class="choices">${p.options.map((o, i) =>
-      `<label><input type="radio" name="${idPrefix}" value="${i}"> ${o}</label>`
+      `<label><input type="radio" name="${idPrefix}" value="${i}"${has && String(savedValue) === String(i) ? ' checked' : ''}> ${o}</label>`
     ).join('')}</div>`;
   }
   const ph = p.type === 'number' ? 'Введи число' : 'Введи ответ';
   const units = p.units ? `<span class="units">${p.units}</span>` : '';
+  const val = has ? ` value="${escapeHtml(String(savedValue))}"` : '';
   return `<div style="display:flex; align-items:center; gap:0.4rem;">
-    <input type="text" id="${idPrefix}" placeholder="${ph}" />${units}
+    <input type="text" id="${idPrefix}"${val} placeholder="${ph}" />${units}
   </div>`;
 }
 
@@ -548,6 +599,8 @@ function checkAllProblems(dayKey, day, problemsToShow) {
   const km = dayKey.match(/^w(\d+)d(\d+)$/);
   const wN = km ? km[1] : '0';
   const dN = km ? km[2] : '0';
+  if (!state.todayAnswers) state.todayAnswers = {};
+  state.todayAnswers[dayKey] = {};
   problemsToShow.forEach((p, i) => {
     const value = getProblemValue(p, `prob-${i}`);
     const ok = checkAnswer(p, value);
@@ -557,6 +610,7 @@ function checkAllProblems(dayKey, day, problemsToShow) {
     const fb = parent.querySelector('.feedback-area');
     fb.innerHTML = renderFeedback(p, ok);
     recordProblemResult(`prog.${day.subject}.w${wN}.d${dN}.p${i}`, ok);
+    state.todayAnswers[dayKey][i] = { value, ok, checked: true };
     if (ok) correct++;
     if (p.oge) { ogeTotal++; if (ok) ogeCorrect++; }
   });
@@ -637,7 +691,7 @@ function checkAllVocab(words) {
   words.forEach((v, i) => {
     const inp = document.getElementById(`vocab-${i}`);
     const ok = normalizeText(inp ? inp.value : '') === normalizeText(v.w);
-    todaysVocab[v.w] = { value: inp ? inp.value : '', ok };
+    todaysVocab[v.w] = { value: inp ? inp.value : '', ok, checked: true };
     const parent = document.querySelector(`.problem[data-vocab-idx="${i}"]`);
     parent.classList.remove('correct', 'wrong');
     parent.classList.add(ok ? 'correct' : 'wrong');
