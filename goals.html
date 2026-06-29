@@ -125,7 +125,11 @@ const MESSAGES = ["39 ПОМИДОРОВ","6 КОТЛЕТ","ПРАВО РУЛЯ"
 "ТЕРПЕНИЕ И ТРУД","ЛИХА БЕДА НАЧАЛО","КАПЛЯ КАМЕНЬ ТОЧИТ","ДОРОГУ ОСИЛИТ ИДУЩИЙ","5 ЯБЛОК",
 "100 ШАГОВ","ВЕТЕР КРЕПЧАЕТ","ЯКОРЬ ПОДНЯТЬ","ПОПУТНОГО ВЕТРА","ТАК ДЕРЖАТЬ","12 РАКУШЕК",
 "7 ФУТОВ ПОД КИЛЕМ","8 ЧАЕК","ГАЛС ПРАВЫЙ","НЕ ВЕШАЙ НОС","СВИСТАТЬ ВСЕХ","2 КОМПАСА",
-"ВПЕРЕД К МЕЧТЕ","ДЕРЖИ КУРС"];
+"ВПЕРЕД К МЕЧТЕ","ДЕРЖИ КУРС",
+"РВАНЫЙ ГЕННАКЕР","СЕМЬ РАЗ ОТМЕРЬ","ВОЛКОВ БОЯТЬСЯ","УТРО ВЕЧЕРА МУДРЕНЕЕ","ГЛАЗА БОЯТСЯ",
+"4 СТОРОНЫ СВЕТА","15 МАТРОСОВ","СУНДУК МЕРТВЕЦА","РОЗА ВЕТРОВ","СПИНАКЕР НАПОЛНЕН",
+"ОВЕРШТАГ","ФОРДЕВИНД","БЕЙДЕВИНД","24 УЗЛА","ШТОРМ ИДЕТ","ДЕРЖИ НОС ПО ВЕТРУ",
+"ШКОТ И ГИК","42 ЧАЙКИ","ВСЕ ПОЛУЧИТСЯ","9 ВАЛОВ","ЛЕВЫЙ ГАЛС"];
 
 const SAILING = [
  ["mppss","Галс по борту ветра","Галс называют по борту, с которого дует ветер. Ветер в правый борт — правый галс (гик слева). Ветер в левый борт — левый галс (гик справа).","Гик у тебя справа. Какой это галс?","Левый галс."],
@@ -271,47 +275,45 @@ function toggle(k){const x=day(isoToday());x[k]=!x[k];save();render();}
 
 /* ---- ОТЖИМАНИЯ ---- */
 const PTYPES=["обычные","армейские","алмазные","широкие","узкие","наклонные","на коленях","другое…"];
-function pushGoal(){return S.pushupMax?Math.max(20,S.pushupMax*2):0;}
+function pushGoal(){return 70;}
 function pushTotal(d){const x=S.days[d];return x&&x.pushLog?x.pushLog.reduce((s,e)=>s+(+e.reps||0),0):0;}
 function syncPush(){const d=isoToday();const x=day(d);x.pushups=pushGoal()>0&&pushTotal(d)>=pushGoal();}
 function tPush(){
   const d=isoToday();const x=day(d);x.pushLog=x.pushLog||[];
-  if(!S.pushupMax){
-    return `<div class="card"><h2>💪 Отжимания → 50+ за раз</h2>
-      <p>Сначала замерим старт. Сделай максимум отжиманий за один подход (чисто, до отказа) и впиши число.</p>
-      <div class="row"><input id="pm" type="number" inputmode="numeric" placeholder="например 12" style="max-width:140px">
-      <button class="btn" onclick="setMax()">Сохранить</button></div>
-      <p class="muted">После этого появятся дневной счётчик и цель. Раз в неделю — перезамер.</p></div>`;
-  }
   const total=pushTotal(d),goal=pushGoal();
   const pctG=Math.min(100,Math.round(total/goal*100));
-  const pctM=Math.min(100,Math.round(S.pushupMax/50*100));
-  const last=S.pushupHistory[S.pushupHistory.length-1];
-  const sinceTest=last?Math.round((parse(d)-parse(last.date))/86400000):99;
   const log=x.pushLog.length?x.pushLog.map((e,i)=>`<span class="chip">${e.type} ×${e.reps} <span onclick="delPush(${i})" style="cursor:pointer;color:var(--bad)">✕</span></span>`).join(" "):'<span class="muted">пока пусто</span>';
   const opts=PTYPES.map(t=>`<option>${t}</option>`).join("");
-  return `<div class="cols">
-   <div class="col">
-    <div class="card"><h2>🔥 Всего за сегодня</h2>
-     <p style="font-size:1.7rem;margin:2px 0"><b>${total}</b> <span class="muted" style="font-size:1rem">/ цель ${goal}</span></p>
-     <div class="progress"><i style="width:${pctG}%"></i></div>
+  const bonus=total>=goal?`<p class="ok" style="margin-top:6px">Цель взята! 🔥${total>goal?' сверх плана +'+(total-goal):''}</p>`:'';
+  const left=`<div class="card"><h2>🔥 Всего за сегодня</h2>
+     <p style="font-size:1.7rem;margin:2px 0"><b>${total}</b> <span class="muted" style="font-size:1rem">/ цель ${goal}+</span></p>
+     <div class="progress"><i style="width:${pctG}%"></i></div>${bonus}
      <h3>Добавить подход</h3>
      <div class="row"><select id="ptype" style="max-width:150px">${opts}</select>
        <input id="preps" type="number" inputmode="numeric" placeholder="сколько" style="max-width:110px">
        <button class="btn" onclick="addPush()">+ Добавить</button></div>
      <h3>Подходы за день</h3><div class="row">${log}</div>
-     <p class="muted" style="margin-top:8px">Набирай объём за день: проснулась +10 обычных, в обед +10 армейских, вечером +5 алмазных… День засчитан, когда добьёшь цель ${goal}.</p></div>
-   </div>
-   <div class="col">
-    <div class="card"><h2>💪 Максимум за раз</h2>
+     <p class="muted" style="margin-top:8px">Цель дня — <b>70+</b>, больше — лучше. Набирай объём за день: +10 обычных утром, +10 армейских днём, +5 алмазных вечером…</p></div>`;
+  let right;
+  if(!S.pushupMax){
+    right=`<div class="card"><h2>💪 Максимум за раз</h2>
+     <p>Замерь старт: максимум отжиманий за один подход (до отказа) и впиши.</p>
+     <div class="row"><input id="pm" type="number" inputmode="numeric" placeholder="например 12" style="max-width:140px">
+     <button class="btn" onclick="setMax()">Сохранить</button></div>
+     <p class="muted">Цель — 50 за раз. Раз в неделю перезамеряем.</p></div>`;
+  } else {
+    const pctM=Math.min(100,Math.round(S.pushupMax/50*100));
+    const last=S.pushupHistory[S.pushupHistory.length-1];
+    const sinceTest=last?Math.round((parse(d)-parse(last.date))/86400000):99;
+    right=`<div class="card"><h2>💪 Максимум за раз</h2>
      <p>Сейчас: <b>${S.pushupMax}</b> → цель <b>50</b></p>
      <div class="progress"><i style="width:${pctM}%"></i></div><p class="muted">${pctM}% до 50 за раз</p></div>
     <div class="card"><h3>Перезамер максимума</h3>
      ${sinceTest>=7?'<p class="ok">Пора проверить максимум за раз! 💪</p>':'<p class="muted">Следующий замер через '+(7-sinceTest)+' дн.</p>'}
      <div class="row"><input id="pm" type="number" inputmode="numeric" placeholder="новый максимум" style="max-width:160px">
-     <button class="btn ghost" onclick="setMax()">Обновить</button></div></div>
-   </div>
-  </div>`;
+     <button class="btn ghost" onclick="setMax()">Обновить</button></div></div>`;
+  }
+  return `<div class="cols"><div class="col">${left}</div><div class="col">${right}</div></div>`;
 }
 function addPush(){
   let t=document.getElementById("ptype").value;
@@ -327,37 +329,48 @@ function setMax(){const v=parseInt(document.getElementById("pm").value,10);
 
 /* ---- МОРЗЕ ---- */
 function encode(t){return t.toUpperCase().replace(/Ё/g,"Е").split("").map(ch=>ch===" "?"/":(MORSE[ch]||"")).join(" ");}
+function morseToday(){const b=dayIndex()*3;return [0,1,2].map(o=>MESSAGES[(b+o)%MESSAGES.length]);}
+function moreMorse(){const x=day(isoToday());x.mShown=Math.min(3,(x.mShown||1)+1);save();render();}
 function tMorse(){
-  const i=dayIndex()%MESSAGES.length;
-  const x=day(isoToday());
+  const x=day(isoToday());x.mGuess=x.mGuess||["","",""];x.mDone=x.mDone||[false,false,false];
+  if(x.mShown==null)x.mShown=1;
+  const ps=morseToday();
   const tableLet=Object.keys(MORSE_RU).map(k=>`<div>${k}<span class="m">${MORSE_RU[k]}</span></div>`).join("");
   const tableNum=Object.keys(MORSE_NUM).map(k=>`<div>${k}<span class="m">${MORSE_NUM[k]}</span></div>`).join("");
-  return `<div class="card"><h2>📡 Послание дня</h2>
-    <p class="muted">Точка <b>·</b>, тире <b>—</b>, пробел между буквами, «/» — пробел между словами. Расшифруй по русской азбуке ниже.</p>
-    <div class="morse">${encode(MESSAGES[i])}</div>
-    <div class="row"><input id="mg" placeholder="твоя расшифровка" value="${x.morseGuess||''}">
-    <button class="btn" onclick="checkMorse()">Проверить</button>
-    <button class="btn ghost" onclick="revealMorse()">Показать ответ</button></div>
-    <div id="mres" style="margin-top:10px"></div>
-    <p class="muted" style="margin-top:6px">Решено посланий: <b id="msolved">${S.morseSolved}</b></p>
-  </div>
-  <div class="card"><h3>Русская азбука Морзе</h3><div class="mtable">${tableLet}</div>
-    <h3>Цифры</h3><div class="mtable">${tableNum}</div></div>`;
+  let cards="";
+  for(let k=0;k<x.mShown;k++){
+    cards+=`<div class="card"><div class="muted">${k===0?'Послание дня (основное)':'Бонус '+k}</div>
+      <div class="morse">${encode(ps[k])}</div>
+      <div class="row"><input id="mg${k}" placeholder="твоя расшифровка" value="${(x.mGuess[k]||'').replace(/"/g,'&quot;')}">
+      <button class="btn" onclick="checkMorse(${k})">Проверить</button>
+      <button class="btn ghost" onclick="revealMorse(${k})">Ответ</button></div>
+      <div id="mres${k}" style="margin-top:8px">${x.mDone[k]?'<span class="ok">Разгадано ✓</span>':''}</div></div>`;
+  }
+  const more=x.mShown<3?`<button class="btn ghost" onclick="moreMorse()">➕ ещё фраза (по желанию)</button>`:'<span class="muted">Все 3 на сегодня открыты 👏</span>';
+  return `<div class="card"><h2>📡 Морзе</h2>
+    <p class="muted">Точка <b>·</b>, тире <b>—</b>, пробел между буквами, «/» — между словами. Расшифруй по русской азбуке ниже. День засчитывается с первой; до трёх в день — по желанию.</p>
+    <p class="muted" style="margin-top:4px">Решено всего: <b>${S.morseSolved}</b></p></div>
+    ${cards}
+    <div class="card">${more}</div>
+    <div class="card"><h3>Русская азбука Морзе</h3><div class="mtable">${tableLet}</div>
+      <h3>Цифры</h3><div class="mtable">${tableNum}</div></div>`;
 }
 function fillMorse(){}
-function checkMorse(){
-  const i=dayIndex()%MESSAGES.length;
-  const g=(document.getElementById("mg").value||"").trim().toUpperCase().replace(/Ё/g,"Е").replace(/\s+/g," ");
-  const x=day(isoToday());x.morseGuess=document.getElementById("mg").value;
-  const ans=MESSAGES[i].toUpperCase().replace(/Ё/g,"Е");
-  const res=document.getElementById("mres");
-  if(g===ans){res.innerHTML='<span class="ok">Верно! 🎉 '+ans+'</span>';
-    if(!x.morse){x.morse=true;S.morseSolved++;}save();renderHeader();
-    document.getElementById("msolved").textContent=S.morseSolved;}
-  else{res.innerHTML='<span class="no">Не совсем. Попробуй ещё или открой азбуку.</span>';save();}
+function checkMorse(k){
+  const ps=morseToday();const x=day(isoToday());x.mGuess=x.mGuess||["","",""];x.mDone=x.mDone||[false,false,false];
+  x.mGuess[k]=document.getElementById("mg"+k).value;
+  const g=(x.mGuess[k]||"").trim().toUpperCase().replace(/Ё/g,"Е").replace(/\s+/g," ");
+  const ans=ps[k].toUpperCase().replace(/Ё/g,"Е");
+  if(g===ans){
+    if(!x.mDone[k]){x.mDone[k]=true;S.morseSolved++;}
+    if(!x.morse)x.morse=true;
+    save();render();
+  }else{
+    save();
+    document.getElementById("mres"+k).innerHTML='<span class="no">Не совсем — попробуй ещё или нажми «Ответ».</span>';
+  }
 }
-function revealMorse(){const i=dayIndex()%MESSAGES.length;
-  document.getElementById("mres").innerHTML='Ответ: <b>'+MESSAGES[i]+'</b>';}
+function revealMorse(k){const ps=morseToday();document.getElementById("mres"+k).innerHTML='Ответ: <b>'+ps[k]+'</b>';}
 
 /* ---- ПАРУС ---- */
 function plabel(k){return{mppss:"МППСС",meteo:"Метео",tactic:"Тактика"}[k];}
