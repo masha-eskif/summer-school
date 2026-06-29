@@ -84,6 +84,7 @@
     background:var(--card2); border-radius:10px; padding:8px 12px; font-weight:600; font-size:.85rem; white-space:nowrap;}
   .cols{display:flex; gap:14px; flex-wrap:wrap;}
   .col{flex:1 1 300px; min-width:0;}
+  @media (max-width:560px){ .cols{flex-direction:column;} }
   .ok{color:var(--good); font-weight:700;}
   .no{color:var(--bad); font-weight:700;}
   small.note{color:var(--dim);}
@@ -110,16 +111,21 @@
 <script src="vocab.js"></script>
 <script>
 /* ============================ ДАННЫЕ ============================ */
-const MORSE = {A:".-",B:"-...",C:"-.-.",D:"-..",E:".",F:"..-.",G:"--.",H:"....",I:"..",
-J:".---",K:"-.-",L:".-..",M:"--",N:"-.",O:"---",P:".--.",Q:"--.-",R:".-.",S:"...",T:"-",
-U:"..-",V:"...-",W:".--",X:"-..-",Y:"-.--",Z:"--..",
-"0":"-----","1":".----","2":"..---","3":"...--","4":"....-","5":".....","6":"-....","7":"--...","8":"---..","9":"----."};
+// Русская азбука Морзе
+const MORSE_RU={"А":".-","Б":"-...","В":".--","Г":"--.","Д":"-..","Е":".","Ж":"...-","З":"--..",
+"И":"..","Й":".---","К":"-.-","Л":".-..","М":"--","Н":"-.","О":"---","П":".--.","Р":".-.","С":"...",
+"Т":"-","У":"..-","Ф":"..-.","Х":"....","Ц":"-.-.","Ч":"---.","Ш":"----","Щ":"--.-","Ъ":"--.--",
+"Ы":"-.--","Ь":"-..-","Э":"..-..","Ю":"..--","Я":".-.-"};
+const MORSE_NUM={"0":"-----","1":".----","2":"..---","3":"...--","4":"....-","5":".....","6":"-....","7":"--...","8":"---..","9":"----."};
+const MORSE={...MORSE_RU,...MORSE_NUM};
 
-// Послания — латиницей, многие = парусные термины (двойная польза)
-const MESSAGES = ["SOS","SAIL FAST","STAY CALM","WIND SHIFT","PORT TACK","STARBOARD","NO PANIC",
-"HOLD COURSE","RACE READY","GO MASHA","NEVER QUIT","ONE MORE","FOCUS NOW","TRIM SAILS","MARK ROOM",
-"LAY LINE","GUST AHEAD","FLAT WATER","BE BRAVE","PUSH HARD","CALM MIND","FAIR WIND","LEE BOW",
-"CLEAR AIR","TACK NOW","BEAR AWAY","HEAD UP","WELL DONE","KEEP GOING","FULL SEND","RISE UP"];
+// Послания дня — короткие русские: цитаты, поговорки, словосочетания, с числами
+const MESSAGES = ["39 ПОМИДОРОВ","6 КОТЛЕТ","ПРАВО РУЛЯ","ЛЕВО РУЛЯ","ПОЛНЫЙ ВПЕРЕД",
+"ПОДНЯТЬ ПАРУСА","МОРСКОЙ УЗЕЛ","7 ВЕТРОВ","3 КИТА","БЕЗ ТРУДА","КУЙ ЖЕЛЕЗО","ТИШЕ ЕДЕШЬ",
+"ТЕРПЕНИЕ И ТРУД","ЛИХА БЕДА НАЧАЛО","КАПЛЯ КАМЕНЬ ТОЧИТ","ДОРОГУ ОСИЛИТ ИДУЩИЙ","5 ЯБЛОК",
+"100 ШАГОВ","ВЕТЕР КРЕПЧАЕТ","ЯКОРЬ ПОДНЯТЬ","ПОПУТНОГО ВЕТРА","ТАК ДЕРЖАТЬ","12 РАКУШЕК",
+"7 ФУТОВ ПОД КИЛЕМ","8 ЧАЕК","ГАЛС ПРАВЫЙ","НЕ ВЕШАЙ НОС","СВИСТАТЬ ВСЕХ","2 КОМПАСА",
+"ВПЕРЕД К МЕЧТЕ","ДЕРЖИ КУРС"];
 
 const SAILING = [
  ["mppss","Галс по борту ветра","Галс называют по борту, с которого дует ветер. Ветер в правый борт — правый галс (гик слева). Ветер в левый борт — левый галс (гик справа).","Гик у тебя справа. Какой это галс?","Левый галс."],
@@ -320,13 +326,14 @@ function setMax(){const v=parseInt(document.getElementById("pm").value,10);
   if(!v||v<1)return;S.pushupMax=v;S.pushupHistory.push({date:isoToday(),max:v});syncPush();save();render();}
 
 /* ---- МОРЗЕ ---- */
-function encode(t){return t.toUpperCase().split("").map(ch=>ch===" "?"/":(MORSE[ch]||"")).join(" ");}
+function encode(t){return t.toUpperCase().replace(/Ё/g,"Е").split("").map(ch=>ch===" "?"/":(MORSE[ch]||"")).join(" ");}
 function tMorse(){
   const i=dayIndex()%MESSAGES.length;
   const x=day(isoToday());
-  const tableLat=Object.keys(MORSE).slice(0,26).map(k=>`<div>${k}<span class="m">${MORSE[k]}</span></div>`).join("");
+  const tableLet=Object.keys(MORSE_RU).map(k=>`<div>${k}<span class="m">${MORSE_RU[k]}</span></div>`).join("");
+  const tableNum=Object.keys(MORSE_NUM).map(k=>`<div>${k}<span class="m">${MORSE_NUM[k]}</span></div>`).join("");
   return `<div class="card"><h2>📡 Послание дня</h2>
-    <p class="muted">Точка <b>·</b>, тире <b>—</b>, пробел между буквами, «/» — пробел между словами. Расшифруй по азбуке ниже.</p>
+    <p class="muted">Точка <b>·</b>, тире <b>—</b>, пробел между буквами, «/» — пробел между словами. Расшифруй по русской азбуке ниже.</p>
     <div class="morse">${encode(MESSAGES[i])}</div>
     <div class="row"><input id="mg" placeholder="твоя расшифровка" value="${x.morseGuess||''}">
     <button class="btn" onclick="checkMorse()">Проверить</button>
@@ -334,14 +341,15 @@ function tMorse(){
     <div id="mres" style="margin-top:10px"></div>
     <p class="muted" style="margin-top:6px">Решено посланий: <b id="msolved">${S.morseSolved}</b></p>
   </div>
-  <div class="card"><h3>Азбука Морзе (подсказка)</h3><div class="mtable">${tableLat}</div></div>`;
+  <div class="card"><h3>Русская азбука Морзе</h3><div class="mtable">${tableLet}</div>
+    <h3>Цифры</h3><div class="mtable">${tableNum}</div></div>`;
 }
 function fillMorse(){}
 function checkMorse(){
   const i=dayIndex()%MESSAGES.length;
-  const g=(document.getElementById("mg").value||"").trim().toUpperCase().replace(/\s+/g," ");
+  const g=(document.getElementById("mg").value||"").trim().toUpperCase().replace(/Ё/g,"Е").replace(/\s+/g," ");
   const x=day(isoToday());x.morseGuess=document.getElementById("mg").value;
-  const ans=MESSAGES[i].toUpperCase();
+  const ans=MESSAGES[i].toUpperCase().replace(/Ё/g,"Е");
   const res=document.getElementById("mres");
   if(g===ans){res.innerHTML='<span class="ok">Верно! 🎉 '+ans+'</span>';
     if(!x.morse){x.morse=true;S.morseSolved++;}save();renderHeader();
