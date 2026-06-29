@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Моё лето — мои цели</title>
+<style>
+  :root{
+    --bg:#0f1720; --card:#172230; --card2:#1e2c3d; --line:#28384c;
+    --text:#e7eef6; --dim:#9fb0c3; --accent:#4cc2ff; --accent2:#5be0a0;
+    --warn:#ffb454; --bad:#ff7a85; --good:#5be0a0;
+    --radius:16px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; line-height:1.5;}
+  header{padding:18px 16px 10px; max-width:780px; margin:0 auto;}
+  h1{font-size:1.3rem; margin:0 0 4px;}
+  .why{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:12px 14px; margin-top:10px; font-size:.95rem; color:var(--dim); cursor:text;}
+  .why b{color:var(--text);}
+  .streakbar{display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap;}
+  .chip{background:var(--card2); border:1px solid var(--line); border-radius:999px;
+    padding:6px 12px; font-size:.85rem; font-weight:600;}
+  .chip .num{color:var(--accent); font-size:1.05rem;}
+  nav{display:flex; gap:6px; overflow-x:auto; padding:8px 16px; max-width:780px; margin:0 auto;
+    position:sticky; top:0; background:var(--bg); z-index:5; border-bottom:1px solid var(--line);}
+  nav button{flex:0 0 auto; background:none; border:none; color:var(--dim);
+    font-size:.95rem; padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600;}
+  nav button.active{background:var(--card2); color:var(--text);}
+  main{max-width:780px; margin:0 auto; padding:14px 16px 60px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:16px; margin-bottom:14px;}
+  .card h2{margin:0 0 4px; font-size:1.1rem;}
+  .card h3{margin:14px 0 6px; font-size:1rem;}
+  .muted{color:var(--dim); font-size:.9rem;}
+  .task{display:flex; align-items:flex-start; gap:12px; padding:12px; border-radius:12px;
+    background:var(--card2); margin-bottom:10px; border:1px solid var(--line);}
+  .task.done{opacity:.65;}
+  .task .body{flex:1;}
+  .task .ttl{font-weight:700;}
+  .check{flex:0 0 auto; width:30px; height:30px; border-radius:50%; border:2px solid var(--line);
+    background:none; cursor:pointer; font-size:1rem; color:var(--good); display:flex;
+    align-items:center; justify-content:center; transition:.15s;}
+  .check.on{background:var(--good); border-color:var(--good); color:#0f1720;}
+  button.btn{background:var(--accent); color:#062234; border:none; border-radius:10px;
+    padding:10px 16px; font-weight:700; cursor:pointer; font-size:.95rem;}
+  button.btn.ghost{background:none; border:1px solid var(--line); color:var(--text);}
+  input,textarea,select{background:var(--bg); color:var(--text); border:1px solid var(--line);
+    border-radius:10px; padding:10px; font-size:1rem; font-family:inherit; width:100%;}
+  textarea{resize:vertical; min-height:54px;}
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+  .morse{font-family:ui-monospace,Consolas,monospace; font-size:1.5rem; letter-spacing:2px;
+    background:var(--bg); border:1px dashed var(--line); border-radius:12px; padding:16px;
+    word-break:break-word; text-align:center; margin:8px 0;}
+  .mtable{display:grid; grid-template-columns:repeat(auto-fill,minmax(64px,1fr)); gap:4px; margin-top:8px;}
+  .mtable div{background:var(--card2); border-radius:8px; padding:6px; text-align:center; font-size:.8rem;}
+  .mtable .m{font-family:monospace; color:var(--accent); display:block;}
+  .pill{display:inline-block; font-size:.72rem; font-weight:700; padding:3px 9px; border-radius:999px;
+    text-transform:uppercase; letter-spacing:.04em;}
+  .pill.mppss{background:#1d3a5c; color:#9ad0ff;}
+  .pill.meteo{background:#173f33; color:#8fe6c0;}
+  .pill.tactic{background:#4a2d12; color:#ffce9a;}
+  .progress{height:12px; background:var(--bg); border-radius:999px; overflow:hidden; border:1px solid var(--line);}
+  .progress>i{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2));}
+  .grid7{display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-top:8px;}
+  .grid7 .d{aspect-ratio:1; border-radius:9px; background:var(--card2); display:flex;
+    flex-direction:column; align-items:center; justify-content:center; font-size:.7rem; color:var(--dim);
+    border:1px solid var(--line);}
+  .grid7 .d.done{background:#173f33; color:#8fe6c0; border-color:#2e6b54;}
+  .grid7 .d.frozen{background:#1d3a5c; color:#9ad0ff;}
+  .grid7 .d.miss{background:#3a1d22; color:#ff9aa3;}
+  .grid7 .d .dd{font-size:1.1rem;}
+  .moods{display:flex; gap:8px; margin:8px 0;}
+  .moods button{font-size:1.5rem; background:none; border:1px solid var(--line); border-radius:10px;
+    padding:6px 10px; cursor:pointer;}
+  .moods button.sel{border-color:var(--accent); background:var(--card2);}
+  .seg{display:flex; gap:6px; flex-wrap:wrap;}
+  .seg button{background:var(--card2); border:1px solid var(--line); color:var(--text);
+    border-radius:10px; padding:8px 14px; cursor:pointer;}
+  .seg button.sel{background:var(--accent); color:#062234; border-color:var(--accent); font-weight:700;}
+  .topbar{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
+  .linkbtn{display:inline-block; text-decoration:none; border:1px solid var(--line); color:var(--text);
+    background:var(--card2); border-radius:10px; padding:8px 12px; font-weight:600; font-size:.85rem; white-space:nowrap;}
+  .cols{display:flex; gap:14px; flex-wrap:wrap;}
+  .col{flex:1 1 300px; min-width:0;}
+  .ok{color:var(--good); font-weight:700;}
+  .no{color:var(--bad); font-weight:700;}
+  small.note{color:var(--dim);}
+</style>
+</head>
+<body>
+<header>
+  <div class="topbar">
+    <h1>🌅 Моё лето — мои цели</h1>
+    <a class="linkbtn" href="program.html">📚 Учебный сайт →</a>
+  </div>
+  <div class="why" id="why" title="Нажми, чтобы изменить"></div>
+  <div class="streakbar">
+    <span class="chip">🔥 серия: <span class="num" id="streakN">0</span> дн.</span>
+    <span class="chip">🧊 заморозки: <span class="num" id="freezeN">2</span>/2</span>
+    <span class="chip">📅 сегодня: <span class="num" id="todayDone">0</span>/6</span>
+  </div>
+</header>
+
+<nav id="nav"></nav>
+<main id="view"></main>
+
+<script src="problems.js"></script>
+<script src="vocab.js"></script>
+<script>
+/* ============================ ДАННЫЕ ============================ */
+const MORSE = {A:".-",B:"-...",C:"-.-.",D:"-..",E:".",F:"..-.",G:"--.",H:"....",I:"..",
+J:".---",K:"-.-",L:".-..",M:"--",N:"-.",O:"---",P:".--.",Q:"--.-",R:".-.",S:"...",T:"-",
+U:"..-",V:"...-",W:".--",X:"-..-",Y:"-.--",Z:"--..",
+"0":"-----","1":".----","2":"..---","3":"...--","4":"....-","5":".....","6":"-....","7":"--...","8":"---..","9":"----."};
+
+// Послания — латиницей, многие = парусные термины (двойная польза)
+const MESSAGES = ["SOS","SAIL FAST","STAY CALM","WIND SHIFT","PORT TACK","STARBOARD","NO PANIC",
+"HOLD COURSE","RACE READY","GO MASHA","NEVER QUIT","ONE MORE","FOCUS NOW","TRIM SAILS","MARK ROOM",
+"LAY LINE","GUST AHEAD","FLAT WATER","BE BRAVE","PUSH HARD","CALM MIND","FAIR WIND","LEE BOW",
+"CLEAR AIR","TACK NOW","BEAR AWAY","HEAD UP","WELL DONE","KEEP GOING","FULL SEND","RISE UP"];
+
+const SAILING = [
+ ["mppss","Галс по борту ветра","Галс называют по борту, с которого дует ветер. Ветер в правый борт — правый галс (гик слева). Ветер в левый борт — левый галс (гик справа).","Гик у тебя справа. Какой это галс?","Левый галс."],
+ ["mppss","Разные галсы","МППСС пр.12: при разных галсах судно на левом галсе уступает дорогу судну на правом галсе.","Ты на левом галсе, встречный — на правом. Кто уступает?","Ты (левый галс уступает)."],
+ ["mppss","Один галс","Если оба на одном галсе — наветренное судно уступает подветренному.","Вы на одном галсе, ты с наветра. Кто уступает?","Ты (наветренный уступает)."],
+ ["mppss","Обгон","Пр.13: любое обгоняющее судно уступает дорогу обгоняемому — даже парус парусу, независимо от галса.","Ты догоняешь и обходишь судно. Кто уступает?","Ты, как обгоняющая."],
+ ["mppss","Уступать заранее","Пр.16: уступаешь дорогу — действуй заблаговременно, ясно и решительно. Никаких манёвров «впритирку».","Когда начинать манёвр уступки?","Заранее, пока ситуация безопасна."],
+ ["mppss","Держать курс","Пр.17: судно, которому уступают, держит курс и скорость — пока не станет ясно, что иначе столкновения не избежать.","Тебе уступают дорогу. Что делать?","Держать курс и скорость."],
+ ["mppss","Главное правило","Пр.2 и 8: даже имея право дороги, ты обязана избегать столкновения любыми средствами. Право не освобождает от ответственности.","Тебе должны уступить, но не уступают. Твои действия?","Манёвр расхождения — избежать столкновения."],
+ ["mppss","Фарватер","В узкости держись правой стороны фарватера по ходу движения.","С какой стороны узкого фарватера идти?","С правой."],
+ ["meteo","Заход и отход","Заход (lift) — ветер позволяет идти острее к цели. Отход (header) — заставляет уваливать. На лавировке поворачивай на отходах.","Ветер зашёл (lift). Поворачивать?","Нет, идёшь дальше — стало выгоднее."],
+ ["meteo","Бриз","Днём в жару бриз дует с воды на нагретый берег, к вечеру может развернуться. Учитывай у берега.","Жаркий день, берег раскалён. Откуда бриз?","С воды на берег."],
+ ["meteo","Порывы видно","Порыв читается по тёмной ряби на воде. Увидела тёмное пятно — готовься потравить шкот и откренить.","Что значит тёмная рябь впереди?","Идёт порыв ветра."],
+ ["meteo","Облака","Кучевые облака (cumulus) = неустойчивость и порывистый ветер. Ровные слоистые = стабильный ровный ветер.","Небо в кучевых облаках. Какой ветер ждать?","Порывистый, неустойчивый."],
+ ["meteo","Холодный фронт","Перед холодным фронтом — заход и резкое усиление ветра, возможны шквалы. Будь готова заранее.","Идёт холодный фронт. Что с ветром?","Усиление и шквалы."],
+ ["meteo","Тенденция ветра","Следи не за одним порывом, а за тенденцией: ветер устойчиво заходит вправо или влево? Под неё строй стратегию лавировки.","Зачем смотреть тенденцию, а не один порыв?","Чтобы выбрать выгодную сторону дистанции."],
+ ["tactic","Старт","Идеальный старт — на линии, на полном ходу, в момент сигнала, с чистым ветром.","Три признака хорошего старта?","На линии, полный ход, чистый ветер."],
+ ["tactic","Выбор конца линии","Выгодный конец старта выбирают по тому, какой галс выводит ближе к первому знаку и где заход.","Как выбрать конец стартовой линии?","По выгодному галсу и заходу ветра."],
+ ["tactic","Layline","Лейлайн — линия, идя по которой ты впритык приводишься на знак. Перехаживать её нельзя — теряешь дистанцию.","Что плохого в перехаживании лейлайна?","Лишний путь — проигрыш."],
+ ["tactic","Прикрытие","Лидируя, держись между соперником и следующим знаком — твоя «ветровая тень» тормозит его.","Где идти, чтобы прикрыть соперника сзади?","Между ним и знаком."],
+ ["tactic","Место у знака","Правила гонок (RRS 18): внутреннее судно имеет право на место у знака, если оверлап был установлен до зоны (3 длины корпуса).","Когда есть право на место у знака?","Если оверлап установлен до зоны 3 длин."],
+ ["tactic","Старборд","RRS 10 (как и МППСС): на разных галсах левый уступает правому. На сближении громко: «Starboard!».","Что кричат, идя правым галсом на сближении?","«Starboard!»"],
+ ["tactic","Длинный галс первым","На лавировке иди сначала длинным галсом, короткий оставь на финал — меньше риска и потерь.","Каким галсом идти первым на лавировке?","Длинным."]
+];
+
+const EMO = [
+ "Пауза 6 секунд: перед резким ответом — вдох на 4, выдох на 6. Импульс проходит.",
+ "Спроси себя: «Это правда важно сказать сейчас — или я просто хочу быть права?»",
+ "Назови эмоцию про себя: «я злюсь». Названная эмоция теряет силу.",
+ "Правило часа: хочешь отправить резкое сообщение — подожди час и перечитай.",
+ "Замени «ты всегда / ты никогда» на «я чувствую…». Это снимает атаку.",
+ "Перед советом спроси: «Тебе нужен совет или просто чтобы выслушали?»",
+ "Закипаешь — три медленных выдоха, длиннее вдоха. Тело успокаивает голову.",
+ "Промолчать — тоже ответ. Молчание можно дополнить, сказанное не вернуть.",
+ "Замечай телесный сигнал злости (сжатая челюсть, плечи) — это ранний звоночек.",
+ "После вспышки — без самобичевания: заметила → извинилась если надо → пошла дальше.",
+ "Перед спором реши: какого исхода я хочу? Резкая фраза приближает его или отдаляет?",
+ "Я-сообщение: «когда происходит X, я чувствую Y, и мне хотелось бы Z».",
+ "Дай человеку договорить, не перебивая. Посчитай до двух после его паузы.",
+ "Вечером вспомни один момент, где ты сдержалась. Это и есть тренировка."
+];
+
+// Задачи на листке: берём из старого банка только расчётные (type:number) — их надо решать, а не угадывать
+const PROBLEMS = (window.PROBLEM_BANK ? Object.values(window.PROBLEM_BANK).flat() : []).filter(p=>p.type==="number");
+const WORDS = window.VOCAB || [];
+function physToday(){const n=PROBLEMS.length;if(!n)return[];return[PROBLEMS[(dayIndex()*2)%n],PROBLEMS[(dayIndex()*2+1)%n]];}
+function wordsToday(){const n=WORDS.length;if(!n)return[];const o=[];for(let i=0;i<10;i++)o.push(WORDS[(dayIndex()*10+i)%n]);return o;}
+
+/* ============================ СОСТОЯНИЕ ============================ */
+const KEY="goals-state";
+const DEFAULT={
+  why:"Это лето — про меня. Сильнее (50+ отжиманий), морзянка, парус (МППСС, метео, тактика) и умение держать себя в руках. Это нужно мне — значит, моя ответственность.",
+  startDate:isoToday(),
+  pushupMax:null,
+  pushupHistory:[],   // [{date,max}]
+  days:{},            // {iso:{pushups,morse,sailing,emotions, emo:{held,mood,note}, morseGuess}}
+  morseSolved:0,
+  freezeBudget:2
+};
+let S=load();
+function load(){try{const r=localStorage.getItem(KEY);return r?{...DEFAULT,...JSON.parse(r)}:{...DEFAULT};}catch(e){return{...DEFAULT};}}
+function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+
+/* ============================ ДАТЫ ============================ */
+function isoToday(){const d=new Date();return iso(d);}
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function parse(s){const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);}
+function addDays(s,n){const d=parse(s);d.setDate(d.getDate()+n);return iso(d);}
+function dayIndex(){return Math.max(0,Math.round((parse(isoToday())-parse(S.startDate))/86400000));}
+function day(d){if(!S.days[d])S.days[d]={pushups:false,morse:false,sailing:false,emotions:false,physics:false,russian:false};return S.days[d];}
+function isComplete(d){const x=S.days[d];return!!(x&&x.pushups&&x.morse&&x.sailing&&x.emotions&&x.physics&&x.russian);}
+
+/* ============================ СЕРИЯ + ЗАМОРОЗКИ ============================ */
+function computeStreak(){
+  let streak=0, freezesLeft=S.freezeBudget, used=0;
+  let cur=isoToday();
+  // сегодня не считаем «пропуском», если ещё не доделан
+  if(!isComplete(cur)) cur=addDays(cur,-1);
+  while(cur>=S.startDate){
+    if(isComplete(cur)){ streak++; }
+    else { if(used<freezesLeft){ used++; } else break; }
+    cur=addDays(cur,-1);
+  }
+  return {streak, freezesUsed:used, freezesLeft:Math.max(0,freezesLeft-used)};
+}
+
+/* ============================ НАВИГАЦИЯ ============================ */
+const TABS=[["today","Сегодня"],["pushups","Отжимания"],["morse","Морзе"],["sailing","Парус"],["physics","Задачи"],["russian","Русский"],["emotions","Эмоции"],["week","Итоги"]];
+let tab="today";
+function renderNav(){
+  document.getElementById("nav").innerHTML=TABS.map(([k,t])=>
+    `<button class="${k===tab?'active':''}" onclick="go('${k}')">${t}</button>`).join("");
+}
+function go(k){tab=k;render();}
+function renderHeader(){
+  document.getElementById("why").innerHTML=S.why;
+  const st=computeStreak();
+  document.getElementById("streakN").textContent=st.streak;
+  document.getElementById("freezeN").textContent=st.freezesLeft;
+  let c=0;["pushups","morse","sailing","emotions","physics","russian"].forEach(k=>{if(day(isoToday())[k])c++;});
+  document.getElementById("todayDone").textContent=c;
+}
+document.getElementById("why").addEventListener("click",()=>{
+  const v=prompt("Зачем тебе это лето? (своими словами)",S.why.replace(/<[^>]+>/g,""));
+  if(v!==null){S.why=v.trim()||S.why;save();renderHeader();}
+});
+
+/* ============================ ОТРИСОВКА ============================ */
+function render(){syncPush();renderNav();renderHeader();
+  const v=document.getElementById("view");
+  v.innerHTML=({today:tToday,pushups:tPush,morse:tMorse,sailing:tSail,physics:tPhys,russian:tRus,emotions:tEmo,week:tWeek}[tab])();
+  if(tab==="emotions")fillEmo();
+  if(tab==="morse")fillMorse();
+}
+
+/* ---- СЕГОДНЯ ---- */
+function tToday(){
+  const d=isoToday(), x=day(d);
+  const mi=dayIndex()%MESSAGES.length;
+  const si=dayIndex()%SAILING.length;
+  const ei=dayIndex()%EMO.length;
+  const push=S.pushupMax?("сегодня: "+pushTotal(d)+" / цель "+pushGoal()):"введи свой максимум";
+  const card=(k,emoji,ttl,sub)=>`<div class="task ${x[k]?'done':''}">
+    <button class="check ${x[k]?'on':''}" onclick="toggle('${k}')">${x[k]?'✓':''}</button>
+    <div class="body"><div class="ttl">${emoji} ${ttl}</div><div class="muted">${sub}</div></div></div>`;
+  const cardGo=(k,emoji,ttl,sub,t)=>`<div class="task ${x[k]?'done':''}" style="cursor:pointer" onclick="go('${t}')">
+    <div class="check ${x[k]?'on':''}">${x[k]?'✓':''}</div>
+    <div class="body"><div class="ttl">${emoji} ${ttl}</div><div class="muted">${sub} →</div></div></div>`;
+  return `<div class="card"><h2>Сегодня · ${human(d)}</h2>
+    <p class="muted">Шесть маленьких дел дня. Отметь, что сделала. Не обязательно идеально — главное не рвать серию.</p>
+    ${cardGo("pushups","💪","Отжимания",push,"pushups")}
+    ${cardGo("physics","📐","Задачи — 2 на листке","реши с записью, не в уме","physics")}
+    ${cardGo("russian","✍️","Русский — 10 словарных слов","напиши правильно по транскрипции","russian")}
+    ${card("morse","📡","Морзе — расшифруй послание дня","открой вкладку «Морзе»")}
+    ${card("sailing","⛵","Парус: "+SAILING[si][1],"<span class='pill "+SAILING[si][0]+"'>"+plabel(SAILING[si][0])+"</span>")}
+    ${card("emotions","🧘","Эмоции — приём дня + вечерняя отметка",EMO[ei])}
+    </div>
+    <div class="card"><h3>🔥 Твоя серия</h3>
+    <p class="muted">Серия не рвётся, даже если пропустишь день-два — у тебя есть 🧊 заморозки. Один сбой ≠ «всё пропало».</p>
+    ${miniWeek()}</div>`;
+}
+function toggle(k){const x=day(isoToday());x[k]=!x[k];save();render();}
+
+/* ---- ОТЖИМАНИЯ ---- */
+const PTYPES=["обычные","армейские","алмазные","широкие","узкие","наклонные","на коленях","другое…"];
+function pushGoal(){return S.pushupMax?Math.max(20,S.pushupMax*2):0;}
+function pushTotal(d){const x=S.days[d];return x&&x.pushLog?x.pushLog.reduce((s,e)=>s+(+e.reps||0),0):0;}
+function syncPush(){const d=isoToday();const x=day(d);x.pushups=pushGoal()>0&&pushTotal(d)>=pushGoal();}
+function tPush(){
+  const d=isoToday();const x=day(d);x.pushLog=x.pushLog||[];
+  if(!S.pushupMax){
+    return `<div class="card"><h2>💪 Отжимания → 50+ за раз</h2>
+      <p>Сначала замерим старт. Сделай максимум отжиманий за один подход (чисто, до отказа) и впиши число.</p>
+      <div class="row"><input id="pm" type="number" inputmode="numeric" placeholder="например 12" style="max-width:140px">
+      <button class="btn" onclick="setMax()">Сохранить</button></div>
+      <p class="muted">После этого появятся дневной счётчик и цель. Раз в неделю — перезамер.</p></div>`;
+  }
+  const total=pushTotal(d),goal=pushGoal();
+  const pctG=Math.min(100,Math.round(total/goal*100));
+  const pctM=Math.min(100,Math.round(S.pushupMax/50*100));
+  const last=S.pushupHistory[S.pushupHistory.length-1];
+  const sinceTest=last?Math.round((parse(d)-parse(last.date))/86400000):99;
+  const log=x.pushLog.length?x.pushLog.map((e,i)=>`<span class="chip">${e.type} ×${e.reps} <span onclick="delPush(${i})" style="cursor:pointer;color:var(--bad)">✕</span></span>`).join(" "):'<span class="muted">пока пусто</span>';
+  const opts=PTYPES.map(t=>`<option>${t}</option>`).join("");
+  return `<div class="cols">
+   <div class="col">
+    <div class="card"><h2>🔥 Всего за сегодня</h2>
+     <p style="font-size:1.7rem;margin:2px 0"><b>${total}</b> <span class="muted" style="font-size:1rem">/ цель ${goal}</span></p>
+     <div class="progress"><i style="width:${pctG}%"></i></div>
+     <h3>Добавить подход</h3>
+     <div class="row"><select id="ptype" style="max-width:150px">${opts}</select>
+       <input id="preps" type="number" inputmode="numeric" placeholder="сколько" style="max-width:110px">
+       <button class="btn" onclick="addPush()">+ Добавить</button></div>
+     <h3>Подходы за день</h3><div class="row">${log}</div>
+     <p class="muted" style="margin-top:8px">Набирай объём за день: проснулась +10 обычных, в обед +10 армейских, вечером +5 алмазных… День засчитан, когда добьёшь цель ${goal}.</p></div>
+   </div>
+   <div class="col">
+    <div class="card"><h2>💪 Максимум за раз</h2>
+     <p>Сейчас: <b>${S.pushupMax}</b> → цель <b>50</b></p>
+     <div class="progress"><i style="width:${pctM}%"></i></div><p class="muted">${pctM}% до 50 за раз</p></div>
+    <div class="card"><h3>Перезамер максимума</h3>
+     ${sinceTest>=7?'<p class="ok">Пора проверить максимум за раз! 💪</p>':'<p class="muted">Следующий замер через '+(7-sinceTest)+' дн.</p>'}
+     <div class="row"><input id="pm" type="number" inputmode="numeric" placeholder="новый максимум" style="max-width:160px">
+     <button class="btn ghost" onclick="setMax()">Обновить</button></div></div>
+   </div>
+  </div>`;
+}
+function addPush(){
+  let t=document.getElementById("ptype").value;
+  if(t==="другое…"){t=(prompt("Какой вид отжиманий?")||"").trim();if(!t)return;}
+  const r=parseInt(document.getElementById("preps").value,10);
+  if(!r||r<1)return;
+  const x=day(isoToday());x.pushLog=x.pushLog||[];x.pushLog.push({type:t,reps:r});
+  syncPush();save();render();
+}
+function delPush(i){const x=day(isoToday());if(x.pushLog)x.pushLog.splice(i,1);syncPush();save();render();}
+function setMax(){const v=parseInt(document.getElementById("pm").value,10);
+  if(!v||v<1)return;S.pushupMax=v;S.pushupHistory.push({date:isoToday(),max:v});syncPush();save();render();}
+
+/* ---- МОРЗЕ ---- */
+function encode(t){return t.toUpperCase().split("").map(ch=>ch===" "?"/":(MORSE[ch]||"")).join(" ");}
+function tMorse(){
+  const i=dayIndex()%MESSAGES.length;
+  const x=day(isoToday());
+  const tableLat=Object.keys(MORSE).slice(0,26).map(k=>`<div>${k}<span class="m">${MORSE[k]}</span></div>`).join("");
+  return `<div class="card"><h2>📡 Послание дня</h2>
+    <p class="muted">Точка <b>·</b>, тире <b>—</b>, пробел между буквами, «/» — пробел между словами. Расшифруй по азбуке ниже.</p>
+    <div class="morse">${encode(MESSAGES[i])}</div>
+    <div class="row"><input id="mg" placeholder="твоя расшифровка" value="${x.morseGuess||''}">
+    <button class="btn" onclick="checkMorse()">Проверить</button>
+    <button class="btn ghost" onclick="revealMorse()">Показать ответ</button></div>
+    <div id="mres" style="margin-top:10px"></div>
+    <p class="muted" style="margin-top:6px">Решено посланий: <b id="msolved">${S.morseSolved}</b></p>
+  </div>
+  <div class="card"><h3>Азбука Морзе (подсказка)</h3><div class="mtable">${tableLat}</div></div>`;
+}
+function fillMorse(){}
+function checkMorse(){
+  const i=dayIndex()%MESSAGES.length;
+  const g=(document.getElementById("mg").value||"").trim().toUpperCase().replace(/\s+/g," ");
+  const x=day(isoToday());x.morseGuess=document.getElementById("mg").value;
+  const ans=MESSAGES[i].toUpperCase();
+  const res=document.getElementById("mres");
+  if(g===ans){res.innerHTML='<span class="ok">Верно! 🎉 '+ans+'</span>';
+    if(!x.morse){x.morse=true;S.morseSolved++;}save();renderHeader();
+    document.getElementById("msolved").textContent=S.morseSolved;}
+  else{res.innerHTML='<span class="no">Не совсем. Попробуй ещё или открой азбуку.</span>';save();}
+}
+function revealMorse(){const i=dayIndex()%MESSAGES.length;
+  document.getElementById("mres").innerHTML='Ответ: <b>'+MESSAGES[i]+'</b>';}
+
+/* ---- ПАРУС ---- */
+function plabel(k){return{mppss:"МППСС",meteo:"Метео",tactic:"Тактика"}[k];}
+function tSail(){
+  const i=dayIndex()%SAILING.length;const[cat,ttl,txt,q,a]=SAILING[i];const x=day(isoToday());
+  return `<div class="card"><span class="pill ${cat}">${plabel(cat)}</span>
+    <h2 style="margin-top:8px">${ttl}</h2><p>${txt}</p>
+    <h3>Вопрос на закрепление</h3><p><b>${q}</b></p>
+    <button class="btn ghost" onclick="document.getElementById('sa').style.display='block'">Показать ответ</button>
+    <p id="sa" style="display:none;margin-top:8px" class="ok">${a}</p>
+    <div class="task ${x.sailing?'done':''}" style="margin-top:14px">
+    <button class="check ${x.sailing?'on':''}" onclick="toggle('sailing')">${x.sailing?'✓':''}</button>
+    <div class="body"><div class="ttl">Разобрала тему дня</div></div></div></div>
+    <div class="card muted">Темы идут по кругу: МППСС, метеорология и тактика гонок. Каждый день — новая. Скажи мне, если хочешь добавить разделы или углубить.</div>`;
+}
+
+/* ---- ЗАДАЧИ (физика/математика, на листке) ---- */
+function tPhys(){
+  const ps=physToday();const x=day(isoToday());x.physAns=x.physAns||{};
+  if(!ps.length)return `<div class="card"><h2>📐 Задачи</h2><p class="no">Банк задач не загрузился (нет файла problems.js рядом).</p></div>`;
+  let h=`<div class="card"><h2>📐 Задачи дня</h2><p class="muted">Две задачи в несколько действий — решай на листке, потом впиши ответ. День засчитывается, когда обе решены верно. Не получается — нажми «Решение» и разбери.</p></div>`;
+  ps.forEach((p,i)=>{const a=x.physAns[i]||{};
+    h+=`<div class="card"><h3>Задача ${i+1} ${p.oge?'🎯 ОГЭ':''}</h3><p>${p.q}</p>
+      <div class="row"><input id="pa${i}" inputmode="decimal" placeholder="ответ${p.units?' ('+p.units+')':''}" value="${a.val!=null?a.val:''}" style="max-width:220px">
+      <button class="btn" onclick="checkPhys(${i})">Проверить</button>
+      <button class="btn ghost" onclick="document.getElementById('ps${i}').style.display='block'">Решение</button></div>
+      <div id="pr${i}" style="margin-top:8px">${a.ok===true?'<span class="ok">Верно ✓</span>':a.ok===false?'<span class="no">Пока неверно — попробуй ещё или открой решение</span>':''}</div>
+      <p id="ps${i}" style="display:none;margin-top:8px" class="muted">${p.solution||p.hint||''}</p></div>`;});
+  return h;
+}
+function checkPhys(i){
+  const ps=physToday();const p=ps[i];const x=day(isoToday());x.physAns=x.physAns||{};
+  const val=document.getElementById("pa"+i).value;
+  const num=parseFloat(String(val).replace(",","."));
+  const ok=!isNaN(num)&&Math.abs(num-p.answer)<=(p.tolerance||0)+1e-9;
+  x.physAns[i]={val,ok};
+  x.physics=physToday().every((_,j)=>x.physAns[j]&&x.physAns[j].ok);
+  save();render();
+}
+
+/* ---- РУССКИЙ (словарные слова) ---- */
+function tRus(){
+  const ws=wordsToday();const x=day(isoToday());x.rusAns=x.rusAns||{};
+  if(!ws.length)return `<div class="card"><h2>✍️ Русский</h2><p class="no">Словарь не загрузился (нет файла vocab.js рядом).</p></div>`;
+  let score=0,att=0;
+  ws.forEach((w,i)=>{const a=x.rusAns[i]||{};if(a.val!=null)att++;if(a.ok)score++;});
+  let h=`<div class="card"><h2>✍️ Словарные слова — 10</h2>
+    <p>Верно: <b>${score}</b>/10 · проверено ${att}/10</p>
+    <p class="muted">По транскрипции и значению напиши слово правильно. День засчитывается, когда проверишь все 10.</p></div>`;
+  ws.forEach((w,i)=>{const a=x.rusAns[i]||{};
+    h+=`<div class="card"><div class="muted">${w.t} — ${w.m}</div>
+      <div class="row" style="margin-top:8px"><input id="ra${i}" placeholder="напиши слово" value="${a.val!=null?a.val:''}" style="max-width:260px">
+      <button class="btn" onclick="checkRus(${i})">Проверить</button></div>
+      <div id="rr${i}" style="margin-top:6px">${a.ok===true?'<span class="ok">Верно ✓</span>':a.ok===false?'<span class="no">Правильно: '+w.w+'</span>':''}</div></div>`;});
+  return h;
+}
+function checkRus(i){
+  const ws=wordsToday();const w=ws[i];const x=day(isoToday());x.rusAns=x.rusAns||{};
+  const val=document.getElementById("ra"+i).value;
+  const ok=val.trim().toLowerCase().replace(/ё/g,"е")===w.w.toLowerCase().replace(/ё/g,"е");
+  x.rusAns[i]={val,ok};
+  x.russian=ws.every((_,j)=>x.rusAns[j]&&x.rusAns[j].val!=null);
+  save();render();
+}
+
+/* ---- ЭМОЦИИ ---- */
+function tEmo(){
+  const i=dayIndex()%EMO.length;
+  return `<div class="card"><h2>🧘 Приём дня</h2><p style="font-size:1.05rem">${EMO[i]}</p></div>
+   <div class="card"><h3>Вечерняя отметка (10 секунд)</h3>
+    <p class="muted">Сегодня получилось сдержать непрошенную/резкую фразу?</p>
+    <div class="seg" id="held">
+      <button data-v="yes">Да 💪</button><button data-v="partly">Частично</button><button data-v="no">Не вышло</button></div>
+    <h3>Настроение</h3><div class="moods" id="mood">
+      ${[["1","😣"],["2","🙁"],["3","😐"],["4","🙂"],["5","😄"]].map(([v,e])=>`<button data-v="${v}">${e}</button>`).join("")}</div>
+    <h3>Одна строчка: что было трудно / чем горжусь</h3>
+    <textarea id="enote" placeholder="по желанию"></textarea>
+    <div style="margin-top:10px"><button class="btn" onclick="saveEmo()">Сохранить отметку</button></div>
+    <p id="emsg" class="muted" style="margin-top:8px"></p></div>`;
+}
+function fillEmo(){
+  const x=day(isoToday());const e=x.emo||{};
+  if(e.held)document.querySelector(`#held button[data-v="${e.held}"]`)?.classList.add("sel");
+  if(e.mood)document.querySelector(`#mood button[data-v="${e.mood}"]`)?.classList.add("sel");
+  if(e.note)document.getElementById("enote").value=e.note;
+  document.querySelectorAll("#held button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#held button").forEach(z=>z.classList.remove("sel"));b.classList.add("sel");});
+  document.querySelectorAll("#mood button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#mood button").forEach(z=>z.classList.remove("sel"));b.classList.add("sel");});
+}
+function saveEmo(){
+  const x=day(isoToday());
+  const held=document.querySelector("#held button.sel")?.dataset.v||null;
+  const mood=document.querySelector("#mood button.sel")?.dataset.v||null;
+  const note=document.getElementById("enote").value.trim();
+  x.emo={held,mood,note};x.emotions=true;save();renderHeader();
+  document.getElementById("emsg").innerHTML='<span class="ok">Сохранено. Отметка засчитана — это и есть тренировка. ✓</span>';
+}
+
+/* ---- ИТОГИ НЕДЕЛИ ---- */
+function miniWeek(){return weekGrid(7);}
+function tWeek(){
+  const st=computeStreak();
+  const done14=lastN(14).filter(d=>isComplete(d)).length;
+  const lastMax=S.pushupMax||"—";
+  const heldYes=lastN(14).filter(d=>S.days[d]&&S.days[d].emo&&S.days[d].emo.held==="yes").length;
+  return `<div class="card"><h2>📊 Итоги</h2>
+    <div class="row">
+      <span class="chip">🔥 серия <span class="num">${st.streak}</span></span>
+      <span class="chip">✅ дней за 2 недели <span class="num">${done14}</span></span>
+      <span class="chip">💪 максимум <span class="num">${lastMax}</span></span>
+      <span class="chip">📡 морзе решено <span class="num">${S.morseSolved}</span></span>
+      <span class="chip">🧘 сдержалась <span class="num">${heldYes}</span> дн.</span>
+    </div></div>
+   <div class="card"><h3>Последние 2 недели</h3>${weekGrid(14)}
+    <p class="muted" style="margin-top:8px">🟩 день закрыт · 🟦 заморозка · 🟥 пропуск. Пустые — будущее.</p></div>
+   <div class="card muted">Ты сама себе тренер. Раз в неделю смотри сюда: видно честную картину без вранья себе. Падать — нормально, главное — возвращаться.</div>`;
+}
+function lastN(n){const a=[];for(let i=n-1;i>=0;i--)a.push(addDays(isoToday(),-i));return a;}
+function weekGrid(n){
+  // помечаем заморозки: пропущенные дни внутри серии
+  const st=computeStreak();
+  return `<div class="grid7">`+lastN(n).map(d=>{
+    let cls="d",mark="";
+    const future=d>isoToday();
+    if(future){cls+="";}
+    else if(isComplete(d)){cls+=" done";mark="✓";}
+    else if(d===isoToday()){mark="·";}
+    else {cls+=" miss";mark="×";}
+    return `<div class="${cls}"><span class="dd">${mark}</span>${parse(d).getDate()}.${parse(d).getMonth()+1}</div>`;
+  }).join("")+`</div>`;
+}
+
+/* ---- утилита ---- */
+function human(d){const dt=parse(d);const days=["вс","пн","вт","ср","чт","пт","сб"];
+  const mon=["янв","фев","мар","апр","мая","июн","июл","авг","сен","окт","ноя","дек"];
+  return `${days[dt.getDay()]}, ${dt.getDate()} ${mon[dt.getMonth()]}`;}
+
+render();
+</script>
+</body>
+</html>
