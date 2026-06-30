@@ -264,7 +264,7 @@ function computeStreak(){
 }
 
 /* ============================ НАВИГАЦИЯ ============================ */
-const TABS=[["today","Сегодня"],["pushups","Отжимания"],["morse","Морзе"],["sailing","Парус"],["physics","Задачи"],["russian","Русский"],["emotions","Эмоции"],["week","Итоги"],["mom","Для мамы"]];
+const TABS=[["today","Сегодня"],["pushups","Отжимания"],["morse","Морзе"],["sailing","Парус"],["physics","Задачи"],["russian","Русский"],["emotions","Эмоции"],["week","Итоги"],["mom","Результаты"]];
 let tab="today";
 function renderNav(){
   document.getElementById("nav").innerHTML=TABS.map(([k,t])=>
@@ -490,12 +490,18 @@ function tIzl(){
   const x=day(isoToday());x.izl=x.izl||{};
   const t=izlToday();
   return `<div class="card"><h2>✍️ Короткое изложение</h2>
-    <p class="muted">Сегодня вместо словарных слов — изложение. Прочитай текст 2 раза, выдели главные мысли (микротемы) и напиши сжатый пересказ в 3–4 предложениях, сохранив смысл. Проверяешь себя сама.</p></div>
-   <div class="card"><h3>${t.t}</h3><p>${t.x}</p></div>
+    <p class="muted">Сегодня вместо словарных слов — изложение. Прочитай текст 2 раза, выдели главные мысли (микротемы) и напиши сжатый пересказ в 3–4 предложениях, сохранив смысл. Проверяешь себя сама.</p>
+    <button class="btn ghost" id="izltog" onclick="toggleIzl()" style="margin-top:6px">🙈 Скрыть текст</button></div>
+   <div class="card" id="izltextbox"><h3>${t.t}</h3><p>${t.x}</p></div>
    <div class="card"><h3>Твой сжатый пересказ</h3>
     <textarea id="izltext" style="min-height:140px" placeholder="пиши здесь (или на листке — тогда просто отметь «Готово»)">${(x.izl.note||"").replace(/</g,"&lt;")}</textarea>
     <div style="margin-top:10px"><button class="btn" onclick="saveIzl()">Готово</button></div>
     <p id="izlmsg" class="muted" style="margin-top:8px">${x.izl.done?'<span class="ok">Изложение отмечено ✓</span>':''}</p></div>`;
+}
+function toggleIzl(){
+  const b=document.getElementById("izltextbox"),t=document.getElementById("izltog");
+  if(b.style.display==="none"){b.style.display="";t.textContent="🙈 Скрыть текст";}
+  else{b.style.display="none";t.textContent="👁 Показать текст";}
 }
 function saveIzl(){
   const x=day(isoToday());x.izl=x.izl||{};
@@ -587,8 +593,8 @@ function tMom(){
     }
     return `<tr><td>${human(d)}</td><td>${phys}</td><td>${rus}</td></tr>`;
   }).join("");
-  return `<div class="card"><h2>👩 Сводка для мамы</h2>
-    <p class="muted">Только учёба: задачи по физике и русский язык. Остальные мои дела (отжимания, морзе, парус, эмоции) сюда не попадают.</p>
+  return `<div class="card"><h2>📊 Результаты</h2>
+    <p class="muted">Твои результаты по учёбе: задачи по физике и русский язык, по дням. Можно показать маме, если попросит. Остальные дела (отжимания, морзе, парус, эмоции) сюда не попадают.</p>
     <table style="width:100%;border-collapse:collapse;font-size:.92rem">
       <thead><tr style="text-align:left;color:var(--dim)"><th>День</th><th>Задачи</th><th>Русский</th></tr></thead>
       <tbody>${rows}</tbody></table></div>
