@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Улицы Долгопрудного — на Яндекс.Карте</title>
+<style>
+  :root{--bg:#0f1720;--card:#172230;--card2:#1e2c3d;--line:#28384c;--text:#e7eef6;--dim:#9fb0c3;--accent:#4cc2ff;--accent2:#5be0a0;--radius:16px;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;}
+  header{padding:16px;max-width:900px;margin:0 auto;}
+  a.back{color:var(--accent);text-decoration:none;font-weight:600;}
+  h1{font-size:1.3rem;margin:6px 0 4px;}
+  main{max-width:900px;margin:0 auto;padding:8px 16px 60px;}
+  .muted{color:var(--dim);font-size:.9rem;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+  .card h2{margin:0 0 10px;font-size:1.1rem;}
+  .mapwrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
+  iframe{display:block;width:100%;height:460px;border:0;}
+  .progress{height:12px;background:var(--card2);border-radius:999px;overflow:hidden;border:1px solid var(--line);margin:10px 0;}
+  .progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 14px;cursor:pointer;font-size:.92rem;user-select:none;transition:.12s;}
+  .chip.known{background:#173f33;border-color:#2e6b54;color:#8fe6c0;}
+  .chip.known::before{content:"✓ ";}
+  ul{margin:6px 0;padding-left:20px;}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="goals.html">← Мои цели</a>
+  <h1>🗺 Улицы Долгопрудного — на Яндекс.Карте</h1>
+  <p class="muted">Настоящая карта: зумируй (+) — появятся номера домов. Ищи улицы из списка ниже и отмечай выученные.</p>
+</header>
+<main>
+  <div class="card">
+    <div class="mapwrap">
+      <iframe title="Яндекс.Карта Долгопрудного" src="https://yandex.ru/map-widget/v1/?ll=37.503%2C55.934&z=14&l=map" allowfullscreen></iframe>
+    </div>
+    <p class="muted" style="margin-top:8px">Карта интерактивная: двигай, зумируй, нажимай на дома — Яндекс показывает реальные номера.</p>
+  </div>
+
+  <div class="card"><h2>🔢 Как устроена нумерация (шпаргалка)</h2>
+    <ul>
+      <li>Чаще всего: <b>нечётные — слева, чётные — справа</b>, если идти от начала улицы (от центра / станции / магистрали).</li>
+      <li>Исключения: широкие проспекты и шоссе (Лихачёвское, Московское) — номера бывают только с одной стороны или вразброс.</li>
+      <li>Тупики, переулки, проезды — часто сквозная нумерация без деления по сторонам.</li>
+      <li>Долгопрудный «слоёный»: старые дачи + сталинки + новые ЖК, поэтому номера иногда прыгают и есть литеры (12а, 12б).</li>
+      <li>Надёжнее всего ориентироваться <b>по перекрёстку/ориентиру</b>, а не по порядку цифр.</li>
+    </ul>
+  </div>
+
+  <div class="card"><h2>✅ Мой список улиц <span class="muted" id="cnt"></span></h2>
+    <div class="progress"><i id="bar" style="width:0%"></i></div>
+    <div class="chips" id="chips"></div>
+  </div>
+</main>
+<script>
+const STREETS=["Первомайская улица","улица Циолковского","Советская улица","Октябрьская улица","Дирижабельная улица",
+"Спортивная улица","Лётная улица","улица Маяковского","улица Павлова","Комсомольская улица",
+"улица Академика Лаврентьева","улица Академика Христиановича","улица Менделеева","улица Мичурина",
+"улица Жуковского","улица Пушкина","улица Карла Маркса","Театральная улица","Новодачная улица",
+"Северная улица","Зелёная улица","Осенняя улица","Виноградная улица","Молодёжная улица","Береговая улица",
+"Гранитный тупик","Институтский переулок","Научный переулок","Пионерский переулок","Промышленный проезд",
+"Транспортный проезд","Лихачёвский проезд","Лихачёвский проспект","проспект Ракетостроителей",
+"Лихачёвское шоссе","Долгопрудненское шоссе","Московское шоссе","Новодачное шоссе",
+"Новый бульвар","бульвар им. Умберто Нобиле","бульвар космонавта Сереброва А.А.","бульвар Воздухоплавателей","аллея им. П.Л. Капицы","Долгопрудная аллея"];
+const KEY="dolgo_yandex_v1";
+let known={};try{known=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){}
+function save(){localStorage.setItem(KEY,JSON.stringify(known));}
+function toggle(i){const n=STREETS[i];if(known[n])delete known[n];else known[n]=1;save();render();}
+function render(){
+  document.getElementById("chips").innerHTML=STREETS.map((n,i)=>`<span class="chip ${known[n]?'known':''}" onclick="toggle(${i})">${n}</span>`).join("");
+  const d=STREETS.filter(n=>known[n]).length;
+  document.getElementById("cnt").textContent="("+d+"/"+STREETS.length+")";
+  document.getElementById("bar").style.width=Math.round(d/STREETS.length*100)+"%";
+}
+render();
+</script>
+</body>
+</html>
