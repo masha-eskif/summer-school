@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Улицы Долгопрудного — карта</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{--bg:#0f1720;--card:#172230;--card2:#1e2c3d;--line:#28384c;--text:#e7eef6;--dim:#9fb0c3;--accent:#4cc2ff;--accent2:#5be0a0;--bad:#ff7a85;--good:#5be0a0;--radius:16px;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;}
+  header{padding:14px 16px 4px;max-width:900px;margin:0 auto;}
+  a.back{color:var(--accent);text-decoration:none;font-weight:600;}
+  h1{font-size:1.25rem;margin:6px 0 2px;}
+  main{max-width:900px;margin:0 auto;padding:8px 16px 60px;}
+  .muted{color:var(--dim);font-size:.9rem;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:12px;}
+  #map{width:100%;height:480px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#dfe7ec;}
+  .leaflet-container{background:#dfe7ec;font:inherit;}
+  .seg{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+  .seg button{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:600;}
+  .seg button.active{background:var(--accent);color:#062234;border-color:var(--accent);}
+  .btn{background:var(--accent);color:#062234;border:none;border-radius:10px;padding:9px 15px;font-weight:700;cursor:pointer;font-size:.92rem;}
+  .btn.ghost{background:none;border:1px solid var(--line);color:var(--text);}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;max-height:150px;overflow:auto;}
+  .chip{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:.86rem;}
+  .chip.known{background:#173f33;border-color:#2e6b54;color:#8fe6c0;}
+  .chip.sel{background:#ffd166;color:#3a2e05;border-color:#ffd166;}
+  .progress{height:10px;background:var(--card2);border-radius:999px;overflow:hidden;border:1px solid var(--line);margin:8px 0;}
+  .progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+  .big{font-size:1.15rem;font-weight:700;}
+  .ok{color:var(--good);font-weight:700;} .no{color:var(--bad);font-weight:700;}
+  .lgd{display:inline-block;width:12px;height:4px;border-radius:2px;vertical-align:middle;margin-right:4px;}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="goals.html">← Мои цели</a>
+  <h1>🗺 Улицы Долгопрудного</h1>
+  <p class="muted"><span class="lgd" style="background:#4cc2ff"></span>улицы/переулки <span class="lgd" style="background:#ff9e57"></span>шоссе/проспекты <span class="lgd" style="background:#5be0a0"></span>бульвары/аллеи · зелёные — выученные</p>
+</header>
+<main>
+  <div class="seg"><button id="tLearn" class="active" onclick="setMode('learn')">📚 Учить</button>
+    <button id="tQuiz" onclick="setMode('quiz')">🎯 Викторина</button></div>
+  <div class="card" id="panel"></div>
+  <div id="map"></div>
+  <div class="card"><div class="row" style="justify-content:space-between"><b>Выучено</b><span class="muted" id="cnt"></span></div>
+    <div class="progress"><i id="bar" style="width:0%"></i></div></div>
+</main>
+
+<script src="dolgoprudny-geo.js"></script>
+<script>
+const NAMES=STREETS_GEO.map(s=>s.name);
+function cat(n){return /шоссе|проспект/i.test(n)?"road":(/бульвар|аллея/i.test(n)?"boul":"street");}
+const COL={street:"#4cc2ff",road:"#ff9e57",boul:"#5be0a0"};
+const KEY="dolgo_map_learned_v1";
+let learned={};try{learned=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){}
+function save(){localStorage.setItem(KEY,JSON.stringify(learned));}
+
+let map, layers={}, mode="learn", selName=null, quiz=null;
+
+function initMap(){
+  map=L.map("map",{zoomControl:true}).setView([55.933,37.510],14);
+  L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
+    {maxZoom:19,subdomains:"abcd",attribution:"© OpenStreetMap, © CARTO"}).addTo(map);
+  const all=[];
+  STREETS_GEO.forEach(s=>{
+    layers[s.name]=[];
+    s.segs.forEach(seg=>{
+      const pl=L.polyline(seg,{color:COL[cat(s.name)],weight:4,opacity:.85});
+      pl.on("click",()=>onStreet(s.name));
+      pl.addTo(map); layers[s.name].push(pl); all.push(pl);
+    });
+  });
+  map.on("click",onMapClick);
+  try{map.fitBounds(L.featureGroup(all).getBounds().pad(0.05));}catch(e){}
+  styleAll();
+}
+function styleAll(){
+  NAMES.forEach(n=>{
+    let c=COL[cat(n)],w=4,op=.85;
+    if(learned[n]){c="#5be0a0";}
+    if(n===selName){c="#ffd166";w=7;op=1;}
+    layers[n].forEach(pl=>pl.setStyle({color:c,weight:w,opacity:op}));
+  });
+}
+function nearest(latlng){
+  let best=null,bd=1e9;
+  STREETS_GEO.forEach(s=>s.segs.forEach(seg=>seg.forEach(p=>{
+    const d=map.distance(latlng,p); if(d<bd){bd=d;best=s.name;}
+  })));
+  return {name:best,dist:bd};
+}
+function panTo(n){ const pts=[]; layers[n].forEach(pl=>pl.getLatLngs().forEach(x=>pts.push(x))); if(pts.length) map.fitBounds(L.latLngBounds(pts).pad(0.5)); }
+
+/* режимы */
+function setMode(m){mode=m;selName=null;
+  document.getElementById("tLearn").classList.toggle("active",m==="learn");
+  document.getElementById("tQuiz").classList.toggle("active",m==="quiz");
+  styleAll();renderPanel();}
+function onStreet(n){ if(mode==="learn"){ selName=n; styleAll(); flashInfo(n); } else { checkAnswer(n); } }
+function onMapClick(e){ const r=nearest(e.latlng); if(r.dist<150) onStreet(r.name); }
+
+function renderPanel(){
+  if(mode==="learn"){
+    document.getElementById("panel").innerHTML=`<h3 style="margin:0 0 8px">📚 Учить</h3>
+      <p class="muted">Нажми улицу в списке — покажу на карте. Или тапни линию на карте. Кнопка ✓ — «выучила».</p>
+      <div class="chips" id="chips"></div>
+      <p id="info" class="muted" style="margin-top:8px"></p>`;
+    renderChips();
+  }else{
+    document.getElementById("panel").innerHTML=`<h3 style="margin:0 0 8px">🎯 Викторина</h3>
+      <p class="muted">Найди улицу на карте и тапни по ней.</p>
+      <p class="big" id="qname">—</p>
+      <div class="row"><button class="btn" onclick="nextQ()">Новая</button>
+        <button class="btn ghost" onclick="reveal()">Показать</button></div>
+      <p id="qres" style="margin-top:8px"></p><p class="muted" id="qsc"></p>`;
+    quiz={score:0,total:0};qsc();nextQ();
+  }
+  updProg();
+}
+function renderChips(){
+  document.getElementById("chips").innerHTML=NAMES.map(n=>
+    `<span class="chip ${learned[n]?'known':''} ${n===selName?'sel':''}" onclick="pick('${n.replace(/'/g,"\\'")}')">${n}</span>`).join("");
+}
+function pick(n){selName=n;styleAll();flashInfo(n);renderChips();}
+function flashInfo(n){
+  const box=document.getElementById("info");
+  if(box) box.innerHTML=`<b>${n}</b> <button class="btn" style="padding:4px 10px" onclick="toggleLearn('${n.replace(/'/g,"\\'")}')">${learned[n]?'убрать ✓':'выучила ✓'}</button>`;
+  panTo(n);
+}
+function toggleLearn(n){ if(learned[n])delete learned[n]; else learned[n]=1; save(); styleAll(); if(mode==='learn'){renderChips();flashInfo(n);} updProg(); }
+
+/* викторина */
+function nextQ(){ selName=null; styleAll(); document.getElementById("qres").innerHTML="";
+  quiz.cur=NAMES[Math.floor(Math.random()*NAMES.length)];
+  document.getElementById("qname").textContent="Найди: "+quiz.cur; }
+function checkAnswer(n){
+  if(!quiz||!quiz.cur)return; quiz.total++;
+  if(n===quiz.cur){ quiz.score++; learned[quiz.cur]=1; save();
+    selName=quiz.cur; styleAll();
+    document.getElementById("qres").innerHTML='<span class="ok">Верно! 🎉 '+quiz.cur+'</span>'; }
+  else{ selName=quiz.cur; styleAll();
+    document.getElementById("qres").innerHTML='<span class="no">Это '+n+'. Правильная — подсвечена жёлтым.</span>'; }
+  qsc();updProg(); setTimeout(nextQ,1900);
+}
+function reveal(){ if(!quiz||!quiz.cur)return; selName=quiz.cur; styleAll(); panTo(quiz.cur);
+  document.getElementById("qres").innerHTML='<span class="muted">Вот она (жёлтым): '+quiz.cur+'</span>'; }
+function qsc(){const e=document.getElementById("qsc");if(e)e.textContent="Счёт: "+quiz.score+" из "+quiz.total;}
+
+function updProg(){const d=NAMES.filter(n=>learned[n]).length;
+  document.getElementById("cnt").textContent=d+" / "+NAMES.length;
+  document.getElementById("bar").style.width=Math.round(d/NAMES.length*100)+"%";}
+
+window.onload=()=>{ initMap(); renderPanel(); };
+</script>
+</body>
+</html>
