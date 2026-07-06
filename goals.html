@@ -569,7 +569,18 @@ function tWeek(){
     </div></div>
    <div class="card"><h3>Последние 2 недели</h3>${weekGrid(14)}
     <p class="muted" style="margin-top:8px">🟩 день закрыт · 🟦 заморозка · 🟥 пропуск. Пустые — будущее.</p></div>
-   <div class="card muted">Ты сама себе тренер. Раз в неделю смотри сюда: видно честную картину без вранья себе. Падать — нормально, главное — возвращаться.</div>`;
+   <div class="card muted">Ты сама себе тренер. Раз в неделю смотри сюда: видно честную картину без вранья себе. Падать — нормально, главное — возвращаться.</div>
+   <div class="card"><h3>💾 Перенос между устройствами</h3>
+    <p class="muted">Синхронизации нет — данные хранятся в этом браузере. Чтобы перенести на другое устройство: тут нажми «Экспорт», а на другом устройстве вставь код в «Импорт». При импорте данные <b>объединяются</b>, не затираются.</p>
+    <div class="row"><button class="btn" onclick="doExport()">⬆ Экспорт</button></div>
+    <textarea id="expbox" style="min-height:70px;margin-top:8px" placeholder="здесь появится твой код" readonly></textarea>
+    <p id="expmsg" class="muted" style="margin-top:4px"></p>
+    <h3>Импорт</h3>
+    <p class="muted">Вставь код с другого устройства или выбери сохранённый файл.</p>
+    <textarea id="impbox" style="min-height:70px" placeholder="вставь код сюда"></textarea>
+    <div class="row" style="margin-top:8px"><button class="btn" onclick="doImport()">⬇ Загрузить из кода</button>
+      <input type="file" accept="application/json,.json" onchange="importFile(this)" style="max-width:230px"></div>
+    <p id="impmsg" class="muted" style="margin-top:4px"></p></div>`;
 }
 function lastN(n){const a=[];for(let i=n-1;i>=0;i--)a.push(addDays(isoToday(),-i));return a;}
 function weekGrid(n){
@@ -620,6 +631,44 @@ function tCity(){
       <a class="linkbtn" href="dolgoprudny-map.html">🗺 Карта улиц →</a>
       <a class="linkbtn" href="dolgoprudny-streets.html">📜 Список улиц →</a>
     </div></div>`;
+}
+
+/* ---- ЭКСПОРТ / ИМПОРТ (ручной перенос между устройствами) ---- */
+function doExport(){
+  const code=JSON.stringify(S);
+  try{const blob=new Blob([code],{type:"application/json"});const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);a.download="goals-backup.json";a.click();}catch(e){}
+  const ta=document.getElementById("expbox");if(ta)ta.value=code;
+  try{navigator.clipboard.writeText(code);}catch(e){}
+  const m=document.getElementById("expmsg");
+  if(m)m.innerHTML='<span class="ok">Готово: файл скачан, код скопирован. Перенеси на другое устройство → «Импорт».</span>';
+}
+function doImport(){
+  const raw=(document.getElementById("impbox").value||"").trim();
+  if(!raw){document.getElementById("impmsg").innerHTML='<span class="no">Вставь код или выбери файл.</span>';return;}
+  applyImport(raw);
+}
+function importFile(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>applyImport(String(r.result));r.readAsText(f);
+}
+function applyImport(raw){
+  let inc;try{inc=JSON.parse(raw);}catch(e){document.getElementById("impmsg").innerHTML='<span class="no">Не получилось прочитать (неверный код).</span>';return;}
+  mergeState(inc);save();render();
+  const m=document.getElementById("impmsg");if(m)m.innerHTML='<span class="ok">Данные загружены и объединены ✓</span>';
+}
+function doneCount(x){return ["pushups","morse","sailing","emotions","physics","russian"].filter(k=>x&&x[k]).length;}
+function mergeState(inc){
+  if(!inc||typeof inc!=="object")return;
+  inc.days=inc.days||{};
+  for(const d in inc.days){const a=S.days[d],b=inc.days[d];if(!a||doneCount(b)>=doneCount(a))S.days[d]=b;}
+  if(inc.startDate&&inc.startDate<S.startDate)S.startDate=inc.startDate;
+  if(typeof inc.morseSolved==="number")S.morseSolved=Math.max(S.morseSolved||0,inc.morseSolved);
+  if(typeof inc.pushupMax==="number")S.pushupMax=Math.max(S.pushupMax||0,inc.pushupMax);
+  if(Array.isArray(inc.pushupHistory)){const seen=new Set((S.pushupHistory||[]).map(h=>h.date));
+    inc.pushupHistory.forEach(h=>{if(h&&!seen.has(h.date)){S.pushupHistory.push(h);seen.add(h.date);}});}
+  if(inc.why&&(!S.why||S.why===DEFAULT.why))S.why=inc.why;
+  if(inc.seedJul1)S.seedJul1=true;
 }
 
 /* ---- утилита ---- */
