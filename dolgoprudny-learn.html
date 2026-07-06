@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Улицы Долгопрудного — карта-тренажёр</title>
+<style>
+  :root{--bg:#0f1720;--card:#172230;--card2:#1e2c3d;--line:#28384c;--text:#e7eef6;--dim:#9fb0c3;--accent:#4cc2ff;--accent2:#5be0a0;--bad:#ff7a85;--good:#5be0a0;--radius:16px;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;}
+  header{padding:14px 16px 6px;max-width:900px;margin:0 auto;}
+  a.back{color:var(--accent);text-decoration:none;font-weight:600;}
+  h1{font-size:1.25rem;margin:6px 0 2px;}
+  main{max-width:900px;margin:0 auto;padding:8px 16px 60px;}
+  .muted{color:var(--dim);font-size:.9rem;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+  #map{width:100%;height:460px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);background:#dfe7ec;}
+  input,select{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:1rem;font-family:inherit;}
+  select{width:100%;max-width:360px;}
+  .btn{background:var(--accent);color:#062234;border:none;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:.95rem;}
+  .btn.ghost{background:none;border:1px solid var(--line);color:var(--text);}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .seg{display:flex;gap:6px;margin-bottom:12px;}
+  .seg button{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 16px;cursor:pointer;font-weight:600;}
+  .seg button.active{background:var(--accent);color:#062234;border-color:var(--accent);}
+  .ok{color:var(--good);font-weight:700;}
+  .no{color:var(--bad);font-weight:700;}
+  .big{font-size:1.15rem;font-weight:700;}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="goals.html">← Мои цели</a>
+  <h1>🎯 Улицы Долгопрудного — карта-тренажёр</h1>
+</header>
+<main id="main"></main>
+
+<script>
+const STREETS=["Первомайская улица","улица Циолковского","Советская улица","Октябрьская улица","Дирижабельная улица",
+"Спортивная улица","Лётная улица","улица Маяковского","улица Павлова","Комсомольская улица",
+"улица Академика Лаврентьева","улица Академика Христиановича","улица Менделеева","улица Мичурина",
+"улица Жуковского","улица Пушкина","улица Карла Маркса","Театральная улица","Новодачная улица",
+"Северная улица","Зелёная улица","Осенняя улица","Виноградная улица","Молодёжная улица","Береговая улица",
+"Институтский переулок","Научный переулок","Пионерский переулок","Лихачёвский проспект",
+"проспект Ракетостроителей","Лихачёвское шоссе","Долгопрудненское шоссе","Московское шоссе"];
+const CENTER=[55.934,37.503];
+const KKEY="yandex_apikey";
+let map=null, mode="learn", quiz=null, clickable=false;
+const geoCache={};
+
+function el(id){return document.getElementById(id);}
+
+/* -------- запуск: ключ -------- */
+function boot(){
+  const key=localStorage.getItem(KKEY);
+  if(!key){ keyForm(); return; }
+  loadApi(key);
+}
+function keyForm(){
+  el("main").innerHTML=`<div class="card"><h2>🔑 Ключ Яндекс.Карт</h2>
+    <p class="muted">Вставь свой бесплатный ключ (JavaScript API + Геокодер). Он сохранится только в этом браузере, в код сайта не попадает.</p>
+    <div class="row"><input id="k" placeholder="вставь ключ сюда" style="min-width:280px">
+    <button class="btn" onclick="saveKey()">Запустить</button></div>
+    <p class="muted" style="margin-top:8px">Получить ключ: developer.tech.yandex.ru/services → «Подключить API» → JavaScript API и Геокодер.</p></div>`;
+}
+function saveKey(){const v=(el("k").value||"").trim();if(!v)return;localStorage.setItem(KKEY,v);boot();}
+function resetKey(){localStorage.removeItem(KKEY);boot();}
+
+function loadApi(key){
+  el("main").innerHTML=`<div class="card muted">Загружаю карту…</div>`;
+  const s=document.createElement("script");
+  s.src="https://api-maps.yandex.ru/2.1/?apikey="+encodeURIComponent(key)+"&lang=ru_RU";
+  s.onload=()=>ymaps.ready(init);
+  s.onerror=()=>{el("main").innerHTML=`<div class="card"><p class="no">Не удалось загрузить API. Проверь ключ/интернет.</p><button class="btn ghost" onclick="resetKey()">Ввести ключ заново</button></div>`;};
+  document.body.appendChild(s);
+}
+
+/* -------- интерфейс -------- */
+function init(){
+  el("main").innerHTML=`
+    <div class="seg"><button id="tLearn" class="active" onclick="setMode('learn')">📚 Учить</button>
+      <button id="tQuiz" onclick="setMode('quiz')">🎯 Викторина</button></div>
+    <div class="card" id="panel"></div>
+    <div id="map"></div>
+    <p class="muted" style="margin-top:8px">Зумируй карту (+), чтобы видеть номера домов. <a href="#" onclick="resetKey();return false" style="color:var(--dim)">сменить ключ</a></p>`;
+  map=new ymaps.Map("map",{center:CENTER,zoom:13,controls:["zoomControl","typeSelector"]});
+  map.events.add("click",onMapClick);
+  renderPanel();
+}
+function setMode(m){mode=m;el("tLearn").classList.toggle("active",m==="learn");el("tQuiz").classList.toggle("active",m==="quiz");clickable=false;clearMarks();renderPanel();}
+
+function renderPanel(){
+  if(mode==="learn"){
+    el("panel").innerHTML=`<h2>📚 Где находится улица?</h2>
+      <p class="muted">Выбери улицу — карта покажет и подпишет, где она.</p>
+      <select id="sel" onchange="showStreet(this.value)"><option value="">— выбери улицу —</option>
+        ${STREETS.map(n=>`<option>${n}</option>`).join("")}</select>
+      <p id="lmsg" class="muted" style="margin-top:8px"></p>`;
+  } else {
+    el("panel").innerHTML=`<h2>🎯 Викторина</h2>
+      <p class="muted">Называю улицу — найди её и <b>тапни по карте</b> в этом месте.</p>
+      <p class="big" id="qname">—</p>
+      <div class="row"><button class="btn" onclick="newQuestion()">Новая улица</button>
+        <button class="btn ghost" onclick="giveUp()">Показать где</button></div>
+      <p id="qres" style="margin-top:8px"></p>
+      <p class="muted" id="qscore"></p>`;
+    quiz={score:0,total:0}; updateScore(); newQuestion();
+  }
+}
+
+/* -------- геокодер -------- */
+function geo(name){
+  if(geoCache[name]) return Promise.resolve(geoCache[name]);
+  return ymaps.geocode("Долгопрудный, "+name,{results:1}).then(r=>{
+    const o=r.geoObjects.get(0); const c=o?o.geometry.getCoordinates():null; geoCache[name]=c; return c;});
+}
+function clearMarks(){ if(map) map.geoObjects.removeAll(); }
+function mark(coords,label,color){
+  const pm=new ymaps.Placemark(coords,{iconCaption:label,balloonContent:label},{preset:color||"islands#blueDotIconWithCaption"});
+  map.geoObjects.add(pm); return pm;
+}
+
+/* -------- режим Учить -------- */
+function showStreet(name){
+  if(!name)return; clearMarks(); el("lmsg").textContent="ищу…";
+  geo(name).then(c=>{ if(!c){el("lmsg").innerHTML='<span class="no">Не нашлось на карте</span>';return;}
+    map.setCenter(c,16,{duration:400}); mark(c,name,"islands#redDotIconWithCaption");
+    el("lmsg").innerHTML='<span class="ok">Вот она ✓</span> Приблизь, чтобы увидеть номера домов.';});
+}
+
+/* -------- режим Викторина -------- */
+function newQuestion(){
+  clearMarks(); el("qres").innerHTML="";
+  quiz.cur=STREETS[Math.floor(Math.random()*STREETS.length)];
+  el("qname").textContent="Найди: "+quiz.cur;
+  clickable=true;
+  geo(quiz.cur); // подгрузим координаты заранее
+}
+function onMapClick(e){
+  if(mode!=="quiz"||!clickable||!quiz||!quiz.cur)return;
+  const click=e.get("coords");
+  geo(quiz.cur).then(tc=>{
+    if(!tc){el("qres").innerHTML='<span class="no">Улицу не удалось проверить</span>';return;}
+    const dist=ymaps.coordSystem.geo.getDistance(click,tc);
+    clickable=false; quiz.total++;
+    mark(tc,quiz.cur,"islands#greenDotIconWithCaption");
+    if(dist<400){ quiz.score++; el("qres").innerHTML='<span class="ok">Верно! 🎉 ('+Math.round(dist)+' м от цели)</span>'; }
+    else{ el("qres").innerHTML='<span class="no">Мимо ('+Math.round(dist)+' м). Вот где она (зелёная метка).</span>'; }
+    updateScore();
+    setTimeout(newQuestion,1800);
+  });
+}
+function giveUp(){ if(!quiz||!quiz.cur)return; clickable=false;
+  geo(quiz.cur).then(c=>{if(c){clearMarks();map.setCenter(c,16);mark(c,quiz.cur,"islands#greenDotIconWithCaption");}
+    el("qres").innerHTML='<span class="muted">Вот где: '+quiz.cur+'</span>';setTimeout(newQuestion,1800);});
+}
+function updateScore(){el("qscore").textContent="Счёт: "+quiz.score+" из "+quiz.total;}
+
+boot();
+</script>
+</body>
+</html>
