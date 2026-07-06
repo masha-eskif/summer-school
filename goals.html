@@ -238,6 +238,14 @@ const DEFAULT={
 let S=load();
 function load(){try{const r=localStorage.getItem(KEY);return r?{...DEFAULT,...JSON.parse(r)}:{...DEFAULT};}catch(e){return{...DEFAULT};}}
 function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+// Разовая отметка: серия 1–5 июля (Маша занималась с разных устройств, данные не синхронизировались)
+if(!S.seedJul1){
+  S.startDate="2026-07-01";
+  const mk=(d,total)=>{S.days[d]={pushups:true,morse:true,sailing:true,emotions:true,physics:true,russian:true,pushLog:[{type:"обычные",reps:total}]};};
+  mk("2026-07-01",70);mk("2026-07-02",70);mk("2026-07-03",70);mk("2026-07-04",70);mk("2026-07-05",80);
+  S.seedJul1=true;
+  save();
+}
 
 /* ============================ ДАТЫ ============================ */
 function isoToday(){const d=new Date();return iso(d);}
@@ -264,7 +272,7 @@ function computeStreak(){
 }
 
 /* ============================ НАВИГАЦИЯ ============================ */
-const TABS=[["today","Сегодня"],["pushups","Отжимания"],["morse","Морзе"],["sailing","Парус"],["physics","Задачи"],["russian","Русский"],["emotions","Эмоции"],["week","Итоги"],["mom","Результаты"]];
+const TABS=[["today","Сегодня"],["pushups","Отжимания"],["morse","Морзе"],["sailing","Парус"],["physics","Задачи"],["russian","Русский"],["emotions","Эмоции"],["week","Итоги"],["mom","Результаты"],["city","🏙 Улицы"]];
 let tab="today";
 function renderNav(){
   document.getElementById("nav").innerHTML=TABS.map(([k,t])=>
@@ -287,7 +295,7 @@ document.getElementById("why").addEventListener("click",()=>{
 /* ============================ ОТРИСОВКА ============================ */
 function render(){syncPush();renderNav();renderHeader();
   const v=document.getElementById("view");
-  v.innerHTML=({today:tToday,pushups:tPush,morse:tMorse,sailing:tSail,physics:tPhys,russian:tRus,emotions:tEmo,week:tWeek,mom:tMom}[tab])();
+  v.innerHTML=({today:tToday,pushups:tPush,morse:tMorse,sailing:tSail,physics:tPhys,russian:tRus,emotions:tEmo,week:tWeek,mom:tMom,city:tCity}[tab])();
   if(tab==="emotions")fillEmo();
   if(tab==="morse")fillMorse();
 }
@@ -317,7 +325,10 @@ function tToday(){
     </div>
     <div class="card"><h3>🔥 Твоя серия</h3>
     <p class="muted">Серия не рвётся, даже если пропустишь день-два — у тебя есть 🧊 заморозки. Один сбой ≠ «всё пропало».</p>
-    ${miniWeek()}</div>`;
+    ${miniWeek()}</div>
+    <div class="card"><h3>🏙 Бонус: улицы города</h3>
+    <p class="muted">По желанию, на серию не влияет.</p>
+    <a class="linkbtn" href="dolgoprudny-map.html">Открыть тренажёр →</a></div>`;
 }
 function toggle(k){const x=day(isoToday());x[k]=!x[k];save();render();}
 
@@ -599,6 +610,16 @@ function tMom(){
       <thead><tr style="text-align:left;color:var(--dim)"><th>День</th><th>Задачи</th><th>Русский</th></tr></thead>
       <tbody>${rows}</tbody></table></div>
    <div class="card muted">«Задачи 2/2» — обе задачи решены верно. «Слова 8/10» — столько словарных слов написано правильно. В дни изложения — отметка, что пересказ написан.</div>`;
+}
+
+/* ---- УЛИЦЫ ГОРОДА (бонус, не влияет на серию) ---- */
+function tCity(){
+  return `<div class="card"><h2>🏙 Улицы Долгопрудного</h2>
+    <p class="muted">Бонус: тренажёр по улицам твоего города. По желанию — на серию и дневные дела <b>не влияет</b>.</p>
+    <div class="row" style="margin-top:10px">
+      <a class="linkbtn" href="dolgoprudny-map.html">🗺 Карта улиц →</a>
+      <a class="linkbtn" href="dolgoprudny-streets.html">📜 Список улиц →</a>
+    </div></div>`;
 }
 
 /* ---- утилита ---- */

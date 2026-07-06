@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажёр улиц — Долгопрудный · Центр</title>
+<style>
+  :root{
+    --bg:#0f1419; --card:#1a2128; --card2:#222b34; --accent:#4fa3ff;
+    --accent2:#3ddc97; --text:#e7edf3; --muted:#8a99a8; --warn:#ffb454;
+    --err:#ff6b6b; --ok:#3ddc97; --border:#2c3742;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.5;-webkit-tap-highlight-color:transparent}
+  header{padding:18px 16px 10px;text-align:center;border-bottom:1px solid var(--border)}
+  h1{font-size:20px;margin:0 0 4px}
+  .sub{color:var(--muted);font-size:13px}
+  .wrap{max-width:680px;margin:0 auto;padding:14px}
+  .tabs{display:flex;gap:6px;margin:14px 0;flex-wrap:wrap;justify-content:center}
+  .tab{flex:1;min-width:90px;padding:10px;border:1px solid var(--border);background:var(--card);
+    color:var(--text);border-radius:10px;cursor:pointer;font-size:14px;text-align:center;transition:.15s}
+  .tab.active{background:var(--accent);border-color:var(--accent);color:#06121f;font-weight:600}
+  .tab:hover:not(.active){background:var(--card2)}
+  .panel{display:none}
+  .panel.active{display:block}
+
+  /* progress bar */
+  .progress{height:8px;background:var(--card2);border-radius:6px;overflow:hidden;margin:6px 0 16px}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));width:0;transition:.3s}
+
+  /* learn cards */
+  .group-title{font-size:13px;color:var(--accent2);text-transform:uppercase;letter-spacing:.5px;
+    margin:18px 0 8px;font-weight:700}
+  .street{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 14px;margin-bottom:10px}
+  .street h3{margin:0 0 4px;font-size:16px}
+  .street .loc{color:var(--text);font-size:14px;margin:2px 0}
+  .street .land{color:var(--muted);font-size:13px;margin-top:5px}
+  .street .land b{color:var(--warn);font-weight:600}
+  .badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--card2);
+    color:var(--muted);margin-left:6px;vertical-align:middle}
+  .seen-toggle{float:right;font-size:12px;color:var(--muted);cursor:pointer;user-select:none}
+  .street.known{border-color:var(--ok)}
+  .street.known .seen-toggle{color:var(--ok)}
+
+  /* flashcards */
+  .fc{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:30px 20px;
+    text-align:center;min-height:180px;display:flex;flex-direction:column;justify-content:center;
+    cursor:pointer;user-select:none}
+  .fc .q{font-size:22px;font-weight:700}
+  .fc .hint{color:var(--muted);font-size:13px;margin-top:14px}
+  .fc .a{margin-top:14px;font-size:15px;color:var(--accent2);display:none}
+  .fc.flipped .a{display:block}
+  .fc.flipped .hint{display:none}
+  .row{display:flex;gap:10px;margin-top:14px}
+  button.act{flex:1;padding:13px;border:none;border-radius:12px;font-size:15px;cursor:pointer;font-weight:600}
+  .b-no{background:#3a2730;color:var(--err)}
+  .b-yes{background:#1f3a30;color:var(--ok)}
+  .b-skip{background:var(--card2);color:var(--muted)}
+  .counter{text-align:center;color:var(--muted);font-size:13px;margin-top:12px}
+
+  /* quiz */
+  .qz-q{font-size:18px;font-weight:600;margin:8px 0 16px;text-align:center}
+  .opt{display:block;width:100%;text-align:left;padding:13px 15px;margin-bottom:9px;border:1px solid var(--border);
+    background:var(--card);color:var(--text);border-radius:11px;cursor:pointer;font-size:15px;transition:.12s}
+  .opt:hover{background:var(--card2)}
+  .opt.correct{background:#1f3a30;border-color:var(--ok)}
+  .opt.wrong{background:#3a2730;border-color:var(--err)}
+  .opt:disabled{cursor:default}
+  .score{text-align:center;font-size:14px;color:var(--muted);margin-bottom:10px}
+  .next{margin-top:6px}
+  .note{background:#1d2a1f;border:1px solid #2f6b48;border-radius:10px;padding:10px 12px;font-size:13px;
+    color:#bfe6cf;margin:14px 0}
+  .note.warn{background:#2a2418;border-color:#6b5a2f;color:#e6d8bf}
+  .reset{background:none;border:1px solid var(--border);color:var(--muted);padding:8px 14px;border-radius:9px;
+    cursor:pointer;font-size:13px;display:block;margin:20px auto 4px}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+  a{color:var(--accent)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🗺️ Улицы Долгопрудного</h1>
+  <div class="sub">Центральное ядро города · карточки и викторина</div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-panel="learn">📖 Учить</div>
+    <div class="tab" data-panel="cards">🃏 Карточки</div>
+    <div class="tab" data-panel="quiz">❓ Викторина</div>
+  </div>
+
+  <!-- ===== LEARN ===== -->
+  <div class="panel active" id="learn">
+    <div class="note warn">
+      ⚠️ Данные собраны из открытых источников и сгруппированы для удобства навигации.
+      Перед «полевой» проверкой сверься с картой (2ГИС / Яндекс.Карты) — и смело правь список
+      прямо в коде файла (массив <code>STREETS</code> вверху скрипта).
+    </div>
+    <div class="progress"><i id="learnBar"></i></div>
+    <div class="score" id="learnStat"></div>
+    <div id="learnList"></div>
+    <button class="reset" id="resetLearn">Сбросить «выучено»</button>
+  </div>
+
+  <!-- ===== FLASHCARDS ===== -->
+  <div class="panel" id="cards">
+    <div class="score" id="fcMode"></div>
+    <div class="fc" id="fcCard">
+      <div class="q" id="fcQ">—</div>
+      <div class="hint">нажми, чтобы увидеть ответ</div>
+      <div class="a" id="fcA"></div>
+    </div>
+    <div class="row">
+      <button class="act b-no" id="fcNo">Не знал</button>
+      <button class="act b-yes" id="fcYes">Знал</button>
+    </div>
+    <div class="counter" id="fcCount"></div>
+    <button class="reset" id="fcReset">Перемешать заново</button>
+  </div>
+
+  <!-- ===== QUIZ ===== -->
+  <div class="panel" id="quiz">
+    <div class="score" id="qzScore"></div>
+    <div class="qz-q" id="qzQ">—</div>
+    <div id="qzOpts"></div>
+    <button class="act b-skip next" id="qzNext" style="display:none">Дальше →</button>
+  </div>
+</div>
+
+<footer>
+  Сделано для изучения родного города · Долгопрудный, Московская обл.<br>
+  Файл автономный — работает без интернета. Прогресс хранится в этом браузере.
+</footer>
+
+<script>
+/* =======================================================================
+   ДАННЫЕ. Правь свободно: name — название, where — где находится,
+   land — ориентир(ы), zone — для группировки.
+   ======================================================================= */
+const STREETS = [
+  // --- Старый центр (у платформы Новодачная и МФТИ) ---
+  { name:"улица Первомайская", zone:"Старый центр",
+    where:"Главная улица старого центра, тянется от ж/д в сторону Лихачёвского ш.",
+    land:"Рядом платформа Новодачная, администрация, старые жилые кварталы" },
+  { name:"улица Циолковского", zone:"Старый центр",
+    where:"Идёт параллельно Первомайской, жилая зона старого города",
+    land:"Памятник К.Э. Циолковскому; Долгопрудный — родина дирижаблестроения" },
+  { name:"Институтский переулок", zone:"Старый центр",
+    where:"Короткий переулок в районе МФТИ",
+    land:"МФТИ (Институтский пер., 9) — главный ориентир" },
+  { name:"улица Советская", zone:"Старый центр",
+    where:"В историческом ядре, рядом с Первомайской",
+    land:"Жилые дома, ближе к ж/д линии" },
+  { name:"улица Октябрьская", zone:"Старый центр",
+    where:"Старый центр, поперечная к основным улицам",
+    land:"Малоэтажная застройка старого города" },
+  { name:"Дирижабельная улица", zone:"Старый центр",
+    where:"Старый центр; название — память о дирижаблестроении",
+    land:"Историческая отсылка к ДирижаблеСтрою (ОСОАВИАХИМ)" },
+  { name:"Спортивная улица", zone:"Старый центр",
+    where:"В районе старого центра",
+    land:"Спортивные объекты, ФОК «Салют» поблизости" },
+  { name:"улица Лётная", zone:"Старый центр",
+    where:"Старый центр, у района МФТИ",
+    land:"Авиационное название — тема воздухоплавания города" },
+  { name:"улица Маяковского", zone:"Старый центр",
+    where:"Поперечная улица в старом центре",
+    land:"Жилая застройка рядом с Циолковского" },
+  { name:"улица Павлова", zone:"Старый центр",
+    where:"Старый центр, рядом с Первомайской",
+    land:"Жилые дома" },
+  { name:"Комсомольская улица", zone:"Старый центр",
+    where:"Старый центр",
+    land:"Тихие жилые кварталы" },
+  { name:"улица Академика Лаврентьева", zone:"Старый центр",
+    where:"В районе МФТИ",
+    land:"Связана с научным кампусом МФТИ" },
+
+  // --- Центральный микрорайон (новый, вдоль Лихачёвского ш.) ---
+  { name:"Лихачёвский проспект", zone:"Центральный мкр (новый)",
+    where:"Главная ось нового Центрального микрорайона",
+    land:"Новостройки, ТЦ «Конфитюр», Центральная городская больница" },
+  { name:"проспект Пацаева", zone:"Центральный мкр (новый)",
+    where:"Параллельно Лихачёвскому пр-ту, жилые высотки",
+    land:"Назван в честь космонавта В. Пацаева; индекс 141707" },
+  { name:"Лихачёвское шоссе", zone:"Центральный мкр (новый)",
+    where:"Транспортная магистраль, связывает старый центр и новый мкр",
+    land:"Граница между старой и новой частями центра, ТЦ «Дирижабль»" },
+  { name:"Московское шоссе", zone:"Центральный мкр (новый)",
+    where:"Въезд в город со стороны Москвы",
+    land:"Основная въездная магистраль" },
+];
+
+/* ======================= Утилиты и хранилище ======================= */
+const LS_KEY = "dolgo_streets_v1";
+let state = load();
+function load(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)) || {known:{}}; }
+  catch(e){ return {known:{}}; }
+}
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+
+// детерминированное перемешивание (без Math.random привязки к данным сессии)
+function shuffle(arr, seed){
+  const a = arr.slice(); let s = seed||7;
+  for(let i=a.length-1;i>0;i--){ s=(s*9301+49297)%233280; const j=Math.floor(s/233280*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+/* ======================= Вкладки ======================= */
+document.querySelectorAll(".tab").forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    document.getElementById(t.dataset.panel).classList.add("active");
+    if(t.dataset.panel==="cards") initCards();
+    if(t.dataset.panel==="quiz") nextQuiz();
+  };
+});
+
+/* ======================= Вкладка «Учить» ======================= */
+function renderLearn(){
+  const list=document.getElementById("learnList"); list.innerHTML="";
+  const zones=[...new Set(STREETS.map(s=>s.zone))];
+  zones.forEach(z=>{
+    const h=document.createElement("div"); h.className="group-title"; h.textContent=z; list.appendChild(h);
+    STREETS.filter(s=>s.zone===z).forEach(s=>{
+      const known=!!state.known[s.name];
+      const el=document.createElement("div");
+      el.className="street"+(known?" known":"");
+      el.innerHTML=`
+        <span class="seen-toggle">${known?"✓ выучено":"отметить"}</span>
+        <h3>${s.name}</h3>
+        <div class="loc">📍 ${s.where}</div>
+        <div class="land">Ориентир: <b>${s.land}</b></div>`;
+      el.querySelector(".seen-toggle").onclick=(e)=>{
+        e.stopPropagation();
+        if(state.known[s.name]) delete state.known[s.name]; else state.known[s.name]=1;
+        save(); renderLearn();
+      };
+      list.appendChild(el);
+    });
+  });
+  const total=STREETS.length, done=STREETS.filter(s=>state.known[s.name]).length;
+  document.getElementById("learnBar").style.width=(done/total*100)+"%";
+  document.getElementById("learnStat").textContent=`Выучено ${done} из ${total}`;
+}
+document.getElementById("resetLearn").onclick=()=>{
+  if(confirm("Сбросить отметки «выучено»?")){ state.known={}; save(); renderLearn(); }
+};
+
+/* ======================= Карточки ======================= */
+let fcDeck=[], fcIdx=0, fcSeed=42;
+function initCards(){
+  fcDeck=shuffle(STREETS, fcSeed); fcIdx=0; showCard();
+  document.getElementById("fcMode").textContent="Показано название → вспомни, где находится";
+}
+function showCard(){
+  if(!fcDeck.length) return;
+  if(fcIdx>=fcDeck.length){
+    document.getElementById("fcQ").textContent="🎉 Колода пройдена!";
+    document.getElementById("fcA").textContent="Нажми «Перемешать заново»";
+    document.getElementById("fcCard").classList.remove("flipped");
+    document.getElementById("fcCount").textContent="";
+    return;
+  }
+  const s=fcDeck[fcIdx];
+  document.getElementById("fcQ").textContent=s.name;
+  document.getElementById("fcA").innerHTML=`📍 ${s.where}<br><span style="color:var(--warn)">Ориентир: ${s.land}</span>`;
+  document.getElementById("fcCard").classList.remove("flipped");
+  document.getElementById("fcCount").textContent=`Карточка ${fcIdx+1} из ${fcDeck.length}`;
+}
+document.getElementById("fcCard").onclick=function(){ this.classList.toggle("flipped"); };
+document.getElementById("fcYes").onclick=()=>{ const s=fcDeck[fcIdx]; if(s){state.known[s.name]=1;save();} fcIdx++; showCard(); };
+document.getElementById("fcNo").onclick=()=>{ fcIdx++; showCard(); };
+document.getElementById("fcReset").onclick=()=>{ fcSeed=(fcSeed*7+3)%99991; initCards(); };
+
+/* ======================= Викторина ======================= */
+let qzScore=0, qzTotal=0, qzSeed=13;
+function nextQuiz(){
+  document.getElementById("qzNext").style.display="none";
+  qzSeed=(qzSeed*9301+49297)%233280;
+  const pool=shuffle(STREETS,qzSeed);
+  const correct=pool[0];
+  // тип вопроса: по ориентиру или по расположению
+  const byLand = (qzSeed%2===0);
+  document.getElementById("qzQ").textContent = byLand
+    ? `Какая улица здесь: «${correct.land}»?`
+    : `Где находится: ${correct.name}?`;
+  // варианты
+  let opts;
+  if(byLand){
+    opts=shuffle([correct, ...pool.filter(s=>s!==correct).slice(0,3)], qzSeed+1);
+    renderOpts(opts.map(o=>({label:o.name, ok:o===correct})), correct);
+  }else{
+    opts=shuffle([correct, ...pool.filter(s=>s!==correct).slice(0,3)], qzSeed+1);
+    renderOpts(opts.map(o=>({label:o.where, ok:o===correct})), correct);
+  }
+}
+function renderOpts(opts, correct){
+  const box=document.getElementById("qzOpts"); box.innerHTML="";
+  opts.forEach(o=>{
+    const b=document.createElement("button"); b.className="opt"; b.textContent=o.label;
+    b.onclick=()=>{
+      qzTotal++; if(o.ok) qzScore++;
+      [...box.children].forEach(c=>c.disabled=true);
+      box.querySelectorAll(".opt").forEach((c,i)=>{ if(opts[i].ok)c.classList.add("correct"); });
+      if(!o.ok) b.classList.add("wrong");
+      document.getElementById("qzScore").textContent=`Счёт: ${qzScore} / ${qzTotal}`;
+      document.getElementById("qzNext").style.display="block";
+    };
+    box.appendChild(b);
+  });
+  document.getElementById("qzScore").textContent=`Счёт: ${qzScore} / ${qzTotal}`;
+}
+document.getElementById("qzNext").onclick=nextQuiz;
+
+/* ======================= Старт ======================= */
+renderLearn();
+</script>
+</body>
+</html>
