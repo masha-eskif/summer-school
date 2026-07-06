@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Спорт — программа тренировок</title>
+<style>
+  :root{--bg:#0f1720;--card:#172230;--card2:#1e2c3d;--line:#28384c;--text:#e7eef6;--dim:#9fb0c3;--accent:#4cc2ff;--accent2:#5be0a0;--radius:16px;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;}
+  header{padding:16px;max-width:820px;margin:0 auto;}
+  h1{font-size:1.35rem;margin:6px 0 4px;}
+  a.back{color:var(--accent);text-decoration:none;font-weight:600;}
+  nav{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;max-width:820px;margin:0 auto;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--line);}
+  nav button{flex:0 0 auto;background:none;border:none;color:var(--dim);font-size:.95rem;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600;}
+  nav button.active{background:var(--card2);color:var(--text);}
+  main{max-width:820px;margin:0 auto;padding:14px 16px 60px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+  .card h2{margin:0 0 6px;font-size:1.15rem;}
+  .card h3{margin:14px 0 8px;font-size:1.02rem;color:var(--accent2);}
+  .muted{color:var(--dim);font-size:.9rem;}
+  ul{margin:6px 0;padding-left:20px;}
+  table{width:100%;border-collapse:collapse;font-size:.9rem;margin-top:4px;}
+  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;}
+  th{color:var(--dim);font-weight:600;font-size:.82rem;}
+  td.n{white-space:nowrap;color:var(--dim);}
+  a.ex{color:var(--text);text-decoration:none;font-weight:600;border-bottom:1px dashed var(--accent);}
+  a.ex:hover{color:var(--accent);}
+  .play{color:var(--accent);font-size:.8rem;}
+  .tag{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.78rem;color:var(--dim);margin-right:6px;}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="goals.html">← Мои цели</a>
+  <h1>💪 Программа тренировок</h1>
+  <p class="muted">4 дня в неделю, ~1,5 ч. Нажми на название упражнения — откроется видео с техникой. Это бонус, на серию в «Целях» не влияет.</p>
+</header>
+<nav id="nav"></nav>
+<main id="app"></main>
+<script>
+const DAYS=[
+ {key:"d1",tab:"День 1",title:"🔥 День 1: Руки + плечи",
+  warm:["5 мин кардио (вело / ходьба в горку)","Суставная гимнастика: вращения плечами, локтями, запястьями","2 подхода с пустым грифом или лёгкими гантелями (10–12 повторов)"],
+  blocks:[
+   {t:"Блок А: Плечи (база)",rows:[
+    ["Жим гантелей сидя","5","6–8","90 сек"],
+    ["Разведение гантелей в стороны","4","12–15","60 сек"],
+    ["Разведение в наклоне (задняя дельта)","4","15","60 сек"],
+    ["Шраги с гантелями (трапеция)","4","12–15","60 сек"]]},
+   {t:"Блок Б: Бицепс",rows:[
+    ["Сгибания рук со штангой (EZ-гриф)","4","8–10","60 сек"],
+    ["Сгибания рук с гантелями (молот)","4","10–12","60 сек"],
+    ["Сгибания на скамье Скотта (или концентрированные)","3","10–12","45 сек"]]},
+   {t:"Блок В: Трицепс",rows:[
+    ["Французский жим лёжа (EZ-гриф)","4","10–12","60 сек"],
+    ["Разгибание рук в блоке (канат)","4","12–15","60 сек"],
+    ["Отжимания от скамьи (сзади)","3","15–20","45 сек"]]}],
+  cool:"Растяжка бицепса, трицепса, плеч (5 мин)"},
+ {key:"d2",tab:"День 2",title:"🔥 День 2: Спина + пресс",
+  warm:["5 мин кардио","Вращения корпусом, наклоны, плечевой пояс"],
+  blocks:[
+   {t:"Блок А: Ширина спины",rows:[
+    ["Подтягивания (с весом/без)","5","6–8","90 сек"],
+    ["Тяга верхнего блока широким хватом","4","8–10","60 сек"]]},
+   {t:"Блок Б: Толщина спины",rows:[
+    ["Тяга штанги в наклоне (или T-гриф)","4","8–10","90 сек"],
+    ["Тяга гантели одной рукой в наклоне","4","10–12 на руку","60 сек"],
+    ["Тяга нижнего блока к поясу","4","10–12","60 сек"]]},
+   {t:"Блок В: Пресс (без отдыха между упражнениями в круге)",rows:[
+    ["Подъём ног в висе (на турнике)","4","15","45 сек"],
+    ["Скручивания на полу (с весом на груди)","4","20–25","30 сек"],
+    ["Планка на локтях","4","60 сек","30 сек"],
+    ["Боковая планка (каждая сторона)","4","40 сек","30 сек"]]},
+   {t:"Блок Г: Поясница",rows:[
+    ["Гиперэкстензия","4","15–20","60 сек"]]}],
+  cool:"Растяжка широчайших, поясницы, пресса (5 мин)"},
+ {key:"d3",tab:"День 3",title:"🔥 День 3: Ноги (без приседаний)",
+  warm:["5 мин кардио (вело или гребной)","Махи ногами, вращения коленями, голеностопами","Приседания с собственным весом 2×15 (разогрев суставов, не на силу)"],
+  blocks:[
+   {t:"Блок А: Квадрицепсы и ягодицы",rows:[
+    ["Жим ногами (ноги широко, высоко на платформе)","5","8–10","90 сек"],
+    ["Выпады с гантелями (стоя на месте)","4","10–12 на ногу","60 сек"],
+    ["Ягодичный мостик (с весом на бёдрах)","4","15–20","60 сек"]]},
+   {t:"Блок Б: Бицепс бедра и икры",rows:[
+    ["Сгибание ног в тренажёре (лёжа)","5","12–15","60 сек"],
+    ["Икры стоя (в тренажёре)","5","15–20","45 сек"],
+    ["Икры сидя (для глубоких мышц)","4","15–20","45 сек"]]},
+   {t:"Блок В: Добивка (тонус + пампинг)",rows:[
+    ["Разгибание ног в тренажёре (сидя)","4","12–15","45 сек"],
+    ["Гиперэкстензия","3","15–20","60 сек"]]}],
+  cool:"Растяжка квадрицепса, бицепса бедра, ягодиц, икр (5 мин)"},
+ {key:"d4",tab:"День 4",title:"🔥 День 4: Кардио + кор",
+  warm:["Выбери 1 вид кардио на неделю (см. таблицу ниже), 40–50 мин"],
+  cardio:[
+   ["Гребной тренажёр","5×500 м, отдых 90 сек","Записывай время, старайся улучшать"],
+   ["Велотренажёр","30″ спринт / 30″ легко, 20–25 мин","Потом 20 мин равномерно"],
+   ["Беговая дорожка","10′ разминка + 4×800 м (темп) + 10′ заминка","Восстановление 2′ ходьбой"],
+   ["Эллипс","40 мин в темпе, ЧСС 130–140","Слушай музыку/подкаст"]],
+  blocks:[
+   {t:"Кор — 3 круга (без отдыха внутри круга, 60 сек между кругами)",time:true,rows:[
+    ["Планка на локтях","60 сек"],
+    ["Русские скручивания (с блином 2.5–5 кг)","20 раз"],
+    ["Подъём ног в висе (или лёжа)","15 раз"],
+    ["Боковая планка (каждая сторона)","40 сек"],
+    ["Гиперэкстензия (поясница)","15–20 раз"],
+    ["«Скалолаз»","30 сек"]]}],
+  cool:"Растяжка всего тела (особенно ног и спины) + дыхание: вдох 4 / задержка 2 / выдох 6 — 5 циклов (10 мин)"}
+];
+
+function yt(name){return "https://www.youtube.com/results?search_query="+encodeURIComponent(name+" техника выполнения");}
+function ex(name){return `<a class="ex" href="${yt(name)}" target="_blank" rel="noopener">${name}</a> <span class="play">▶</span>`;}
+
+let cur="d1";
+function renderNav(){
+  document.getElementById("nav").innerHTML=
+    DAYS.map(d=>`<button class="${d.key===cur?'active':''}" onclick="go('${d.key}')">${d.tab}</button>`).join("")
+    +`<button class="${cur==='info'?'active':''}" onclick="go('info')">📈 Как расти</button>`;
+}
+function go(k){cur=k;render();window.scrollTo(0,0);}
+
+function renderDay(d){
+  let h=`<div class="card"><h2>${d.title}</h2>
+    <h3>Разминка (10 мин)</h3><ul>${d.warm.map(w=>`<li>${w}</li>`).join("")}</ul></div>`;
+  if(d.cardio){
+    h+=`<div class="card"><h3>Кардио (40–50 мин · выбери 1 вариант на неделю)</h3>
+      <table><thead><tr><th>Вариант</th><th>Формат</th><th>Примечание</th></tr></thead><tbody>`+
+      d.cardio.map(r=>`<tr><td>${ex(r[0])}</td><td>${r[1]}</td><td class="muted">${r[2]}</td></tr>`).join("")+
+      `</tbody></table></div>`;
+  }
+  d.blocks.forEach(b=>{
+    h+=`<div class="card"><h3>${b.t}</h3><table><thead>`;
+    h+= b.time
+      ? `<tr><th>Упражнение</th><th>Время / повторы</th></tr></thead><tbody>`+
+        b.rows.map(r=>`<tr><td>${ex(r[0])}</td><td class="n">${r[1]}</td></tr>`).join("")
+      : `<tr><th>Упражнение</th><th>Подх.</th><th>Повт.</th><th>Отдых</th></tr></thead><tbody>`+
+        b.rows.map(r=>`<tr><td>${ex(r[0])}</td><td class="n">${r[1]}</td><td class="n">${r[2]}</td><td class="n">${r[3]}</td></tr>`).join("");
+    h+=`</tbody></table></div>`;
+  });
+  h+=`<div class="card"><h3>Заминка</h3><p class="muted">${d.cool}</p></div>`;
+  return h;
+}
+
+function renderInfo(){
+  return `<div class="card"><h2>🧭 Как расти</h2>
+    <ul>
+     <li><b>Жим, тяги, жим ногами:</b> цикл 3 недели (тяжёлая → средняя → лёгкая). На 4-й неделе +2,5 кг или +1 повтор.</li>
+     <li><b>Мелкие группы</b> (бицепс, трицепс, дельты): меняй вес раз в 3–4 недели. Работай на качество.</li>
+     <li><b>Пресс и кор:</b> увеличивай время/повторы каждые 2 недели, если легко.</li>
+    </ul></div>
+   <div class="card"><h2>💡 Полезное</h2>
+    <ul>
+     <li><b>Разминка</b> — обязательно. Без неё травмы и слабая отдача.</li>
+     <li><b>Дневник:</b> записывай веса и самочувствие.</li>
+     <li><b>Вода:</b> пей между подходами.</li>
+     <li><b>Сон:</b> 8+ часов — основа роста.</li>
+    </ul></div>`;
+}
+
+function render(){
+  renderNav();
+  const d=DAYS.find(x=>x.key===cur);
+  document.getElementById("app").innerHTML = d ? renderDay(d) : renderInfo();
+}
+render();
+</script>
+</body>
+</html>
