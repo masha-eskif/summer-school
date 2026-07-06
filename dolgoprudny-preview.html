@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Улицы Долгопрудного — черновик</title>
+<style>
+  :root{--bg:#0f1720;--card:#172230;--card2:#1e2c3d;--line:#28384c;--text:#e7eef6;--dim:#9fb0c3;--accent:#4cc2ff;--accent2:#5be0a0;--radius:16px;}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.5;}
+  header{padding:16px;max-width:820px;margin:0 auto;}
+  a.back{color:var(--accent);text-decoration:none;font-weight:600;}
+  h1{font-size:1.3rem;margin:6px 0 4px;}
+  main{max-width:820px;margin:0 auto;padding:8px 16px 60px;}
+  .muted{color:var(--dim);font-size:.9rem;}
+  .draft{background:#4a3a12;color:#ffe0a0;border:1px solid #6b5420;border-radius:12px;padding:10px 12px;font-size:.9rem;margin:10px 0;}
+  .progress{height:12px;background:var(--card2);border-radius:999px;overflow:hidden;border:1px solid var(--line);margin:10px 0;}
+  .progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+  .card h2{margin:0 0 10px;font-size:1.1rem;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:999px;
+    padding:8px 14px;cursor:pointer;font-size:.92rem;user-select:none;transition:.12s;}
+  .chip.known{background:#173f33;border-color:#2e6b54;color:#8fe6c0;}
+  .chip.known::before{content:"✓ ";}
+  .cnt{color:var(--dim);font-size:.85rem;font-weight:600;}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="goals.html">← Мои цели</a>
+  <h1>🏙 Улицы Долгопрудного — черновик</h1>
+  <div class="draft">⚠️ Предварительная версия. Проверь состав: что убрать/добавить/переименовать. Границы: запад — ж/д, восток — Дмитровское ш., юг — Долгопрудненское ш., север — Водники/Новодачная.</div>
+  <div class="muted">Выучено: <span id="done">0</span> из <span id="total">0</span></div>
+  <div class="progress"><i id="bar" style="width:0%"></i></div>
+</header>
+<main id="app"></main>
+<script>
+const DATA=[
+ {cat:"🛣 Улицы, переулки, проезды, шоссе", items:[
+  "Первомайская улица","улица Циолковского","Советская улица","Октябрьская улица","Дирижабельная улица",
+  "Спортивная улица","Лётная улица","улица Маяковского","улица Павлова","Комсомольская улица",
+  "улица Академика Лаврентьева","улица Академика Христиановича","улица Менделеева","улица Мичурина",
+  "улица Жуковского","улица Пушкина","улица Карла Маркса","Театральная улица","Новодачная улица",
+  "Северная улица","Зелёная улица","Осенняя улица","Виноградная улица","Молодёжная улица","Береговая улица",
+  "Гранитный тупик","Институтский переулок","Научный переулок","Пионерский переулок",
+  "Промышленный проезд","Транспортный проезд","Лихачёвский проезд","Лихачёвский проспект",
+  "проспект Ракетостроителей","Лихачёвское шоссе","Долгопрудненское шоссе","Московское шоссе","Новодачное шоссе"]},
+ {cat:"🌳 Бульвары, аллеи, пешеходные", items:[
+  "Новый бульвар","бульвар имени Умберто Нобиле","бульвар космонавта Сереброва А.А.",
+  "бульвар Воздухоплавателей","аллея имени П.Л. Капицы","Долгопрудная аллея"]},
+ {cat:"🏞 Скверы, парки, площади", items:[
+  "Сквер имени П.И. Долгова","Парк культуры и отдыха","площадь Собина"]}
+];
+
+const KEY="dolgo_preview_v1";
+let known={};
+try{known=JSON.parse(localStorage.getItem(KEY))||{};}catch(e){known={};}
+function save(){localStorage.setItem(KEY,JSON.stringify(known));}
+
+function totals(){let t=0,d=0;DATA.forEach(g=>g.items.forEach(n=>{t++;if(known[n])d++;}));return{t,d};}
+function toggle(n){known[n]=!known[n];if(!known[n])delete known[n];save();render();}
+
+function render(){
+  const app=document.getElementById("app");
+  app.innerHTML=DATA.map(g=>{
+    const kc=g.items.filter(n=>known[n]).length;
+    const chips=g.items.map(n=>`<span class="chip ${known[n]?'known':''}" onclick="toggle('${n.replace(/'/g,"\\'")}')">${n}</span>`).join("");
+    return `<div class="card"><h2>${g.cat} <span class="cnt">(${kc}/${g.items.length})</span></h2><div class="chips">${chips}</div></div>`;
+  }).join("");
+  const {t,d}=totals();
+  document.getElementById("total").textContent=t;
+  document.getElementById("done").textContent=d;
+  document.getElementById("bar").style.width=(t?Math.round(d/t*100):0)+"%";
+}
+render();
+</script>
+</body>
+</html>
