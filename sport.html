@@ -11,7 +11,7 @@
   header{padding:16px;max-width:820px;margin:0 auto;}
   h1{font-size:1.35rem;margin:6px 0 4px;}
   a.back{color:var(--accent);text-decoration:none;font-weight:600;}
-  nav{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;max-width:820px;margin:0 auto;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--line);}
+  nav{display:flex;gap:6px;flex-wrap:wrap;padding:8px 16px;max-width:820px;margin:0 auto;position:sticky;top:0;background:var(--bg);z-index:5;border-bottom:1px solid var(--line);}
   nav button{flex:0 0 auto;background:none;border:none;color:var(--dim);font-size:.95rem;padding:8px 12px;border-radius:10px;cursor:pointer;font-weight:600;}
   nav button.active{background:var(--card2);color:var(--text);}
   main{max-width:820px;margin:0 auto;padding:14px 16px 60px;}
@@ -28,6 +28,14 @@
   a.ex:hover{color:var(--accent);}
   .play{color:var(--accent);font-size:.8rem;}
   .tag{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.78rem;color:var(--dim);margin-right:6px;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  input,textarea{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px;font-size:1rem;font-family:inherit;}
+  textarea{width:100%;resize:vertical;}
+  .btn{background:var(--accent);color:#062234;border:none;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer;font-size:.95rem;}
+  .seg{display:flex;gap:6px;flex-wrap:wrap;}
+  .seg button{background:var(--card2);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:8px 12px;cursor:pointer;font-weight:600;}
+  .seg button.active{background:var(--accent);color:#062234;border-color:var(--accent);}
+  .del{color:var(--dim);cursor:pointer;font-size:.82rem;}
 </style>
 </head>
 <body>
@@ -115,7 +123,8 @@ let cur="d1";
 function renderNav(){
   document.getElementById("nav").innerHTML=
     DAYS.map(d=>`<button class="${d.key===cur?'active':''}" onclick="go('${d.key}')">${d.tab}</button>`).join("")
-    +`<button class="${cur==='info'?'active':''}" onclick="go('info')">📈 Как расти</button>`;
+    +`<button class="${cur==='info'?'active':''}" onclick="go('info')">📈 Как расти</button>`
+    +`<button class="${cur==='log'?'active':''}" onclick="go('log')">📓 Дневник</button>`;
 }
 function go(k){cur=k;render();window.scrollTo(0,0);}
 
@@ -157,10 +166,54 @@ function renderInfo(){
     </ul></div>`;
 }
 
+/* ---- ДНЕВНИК ТРЕНИРОВОК ---- */
+const LOGKEY="sport-log";
+function loadLog(){try{return JSON.parse(localStorage.getItem(LOGKEY))||{sessions:[]};}catch(e){return {sessions:[]};}}
+function saveLog(){localStorage.setItem(LOGKEY,JSON.stringify(LOG));}
+let LOG=loadLog();
+let logDay="d1";
+function exNames(d){const out=[];(d.blocks||[]).forEach(b=>b.rows.forEach(r=>out.push(r[0])));return out;}
+function lastWeight(name){for(let i=LOG.sessions.length-1;i>=0;i--){const w=LOG.sessions[i].weights;if(w&&w[name]!=null&&w[name]!=="")return w[name];}return "";}
+function setLogDay(k){logDay=k;render();}
+function renderLog(){
+  const d=DAYS.find(x=>x.key===logDay);
+  const today=new Date().toISOString().slice(0,10);
+  const dbtns=DAYS.map(x=>`<button class="${x.key===logDay?'active':''}" onclick="setLogDay('${x.key}')">${x.tab}</button>`).join("");
+  const names=exNames(d);
+  const exRows=names.length?names.map((n,i)=>{const lw=lastWeight(n);
+    return `<tr><td>${n}</td><td class="n"><input id="w${i}" inputmode="decimal" placeholder="${lw?('было '+lw):'кг'}" style="width:110px"></td></tr>`;}).join("")
+    :'<tr><td colspan="2" class="muted">Кардио-день — вес не нужен, пиши результат в заметке.</td></tr>';
+  const form=`<div class="card"><h2>📓 Записать тренировку</h2>
+    <div class="row"><input type="date" id="logdate" value="${today}" style="max-width:180px"></div>
+    <div class="seg" style="margin-top:10px">${dbtns}</div>
+    <table style="margin-top:10px"><thead><tr><th>Упражнение</th><th>Вес, кг</th></tr></thead><tbody>${exRows}</tbody></table>
+    <h3>Заметка (самочувствие, повторы, что улучшить)</h3>
+    <textarea id="lognote" style="min-height:70px" placeholder="напр.: жим 12 кг стало легко, добавить вес; спина забилась"></textarea>
+    <div style="margin-top:10px"><button class="btn" onclick="saveSession()">Сохранить тренировку</button></div>
+    <p id="logmsg" class="muted" style="margin-top:6px"></p></div>`;
+  const hist=LOG.sessions.length?LOG.sessions.slice().reverse().map(s=>{
+    const ws=Object.entries(s.weights||{}).filter(([k,v])=>v!==""&&v!=null).map(([k,v])=>`${k}: <b>${v}</b>`).join(" · ");
+    return `<div class="card"><div class="row" style="justify-content:space-between"><b>${s.date} · ${s.dayName}</b><span class="del" onclick="delSession('${s.id}')">удалить ✕</span></div>
+      ${ws?`<p class="muted" style="margin-top:6px">${ws}</p>`:''}
+      ${s.note?`<p style="margin-top:6px">${s.note.replace(/</g,"&lt;")}</p>`:''}</div>`;
+  }).join(""):'<div class="card muted">Пока пусто. Запиши первую тренировку сверху 💪</div>';
+  return form+`<h3 style="margin:8px 4px;color:var(--accent2)">История</h3>`+hist;
+}
+function saveSession(){
+  const d=DAYS.find(x=>x.key===logDay);
+  const date=document.getElementById("logdate").value||new Date().toISOString().slice(0,10);
+  const weights={};exNames(d).forEach((n,i)=>{const el=document.getElementById("w"+i);if(el&&el.value.trim()!=="")weights[n]=el.value.trim();});
+  const note=document.getElementById("lognote").value.trim();
+  if(!Object.keys(weights).length && !note){document.getElementById("logmsg").innerHTML='<span style="color:#ff7a85">Заполни хотя бы веса или заметку.</span>';return;}
+  LOG.sessions.push({id:"s"+date+"-"+logDay+"-"+LOG.sessions.length,date,dayKey:logDay,dayName:d.tab,weights,note});
+  saveLog();render();
+}
+function delSession(id){LOG.sessions=LOG.sessions.filter(s=>s.id!==id);saveLog();render();}
+
 function render(){
   renderNav();
   const d=DAYS.find(x=>x.key===cur);
-  document.getElementById("app").innerHTML = d ? renderDay(d) : renderInfo();
+  document.getElementById("app").innerHTML = d ? renderDay(d) : (cur==="log"?renderLog():renderInfo());
 }
 render();
 </script>
