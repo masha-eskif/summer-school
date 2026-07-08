@@ -238,12 +238,13 @@ const DEFAULT={
 let S=load();
 function load(){try{const r=localStorage.getItem(KEY);return r?{...DEFAULT,...JSON.parse(r)}:{...DEFAULT};}catch(e){return{...DEFAULT};}}
 function save(){localStorage.setItem(KEY,JSON.stringify(S));}
-// Разовая отметка: серия 1–5 июля (Маша занималась с разных устройств, данные не синхронизировались)
-if(!S.seedJul1){
+// Разовая отметка серии: всё сделано 1–8 июля (данные не синхронизировались между устройствами)
+if(!S.seedJul8){
   S.startDate="2026-07-01";
   const mk=(d,total)=>{S.days[d]={pushups:true,morse:true,sailing:true,emotions:true,physics:true,russian:true,pushLog:[{type:"обычные",reps:total}]};};
-  mk("2026-07-01",70);mk("2026-07-02",70);mk("2026-07-03",70);mk("2026-07-04",70);mk("2026-07-05",80);
-  S.seedJul1=true;
+  ["2026-07-01","2026-07-02","2026-07-03","2026-07-04","2026-07-06","2026-07-07","2026-07-08"].forEach(d=>mk(d,70));
+  mk("2026-07-05",80);
+  S.seedJul8=true;
   save();
 }
 
