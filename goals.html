@@ -231,7 +231,7 @@ const DEFAULT={
   startDate:isoToday(),
   pushupMax:null,
   pushupHistory:[],   // [{date,max}]
-  days:{},            // {iso:{pushups,morse,sailing,emotions, emo:{held,mood,note}, morseGuess}}
+  days:{},            // {iso:{pushups,morse,sailing,emotions, emo:{studied,block,pushY,held,mood,note}, morseGuess}}
   morseSolved:0,
   freezeBudget:2
 };
@@ -322,7 +322,7 @@ function tToday(){
     ${cardGo("russian","✍️",izlDay?"Русский — короткое изложение":"Русский — 10 словарных слов",izlDay?"прочитай и перескажи кратко":"напиши правильно по транскрипции","russian")}
     ${card("morse","📡","Морзе — расшифруй послание дня","открой вкладку «Морзе»")}
     ${card("sailing","⛵","Парус: "+SAILING[si][1],"<span class='pill "+SAILING[si][0]+"'>"+plabel(SAILING[si][0])+"</span>")}
-    ${card("emotions","🧘","Эмоции — приём дня + утренняя отметка",EMO[ei])}
+    ${card("emotions","🧘","Эмоции — приём дня + разбор вчера",reviewDone(d)?"разбор сделан ✓ · серия "+reviewStreak():"20 секунд по кнопкам про вчера")}
     </div>
     <div class="card"><h3>🔥 Твоя серия</h3>
     <p class="muted">Серия не рвётся, даже если пропустишь день-два — у тебя есть 🧊 заморозки. Один сбой ≠ «всё пропало».</p>
@@ -521,36 +521,72 @@ function saveIzl(){
   x.izl.done=true;x.russian=true;save();render();
 }
 
-/* ---- ЭМОЦИИ ---- */
+/* ---- ЭМОЦИИ / УТРЕННИЙ РАЗБОР ---- */
+// Разбор считается сделанным, если отмечен главный вопрос — «занялась ли учёбой»
+function reviewDone(d){const x=S.days[d];return!!(x&&x.emo&&x.emo.studied);}
+function reviewStreak(){
+  let s=0, cur=isoToday();
+  if(!reviewDone(cur)) cur=addDays(cur,-1);   // сегодня ещё не заполнено — не рвём серию
+  while(cur>=S.startDate){
+    if(reviewDone(cur)) s++; else break;
+    cur=addDays(cur,-1);
+  }
+  return s;
+}
+// набор кнопок-сегментов: id, подпись, [ [значение,текст], ... ]
+function segRow(id,label,opts){
+  return `<h3>${label}</h3><div class="seg" id="${id}">${opts.map(([v,t])=>`<button data-v="${v}">${t}</button>`).join("")}</div>`;
+}
 function tEmo(){
   const i=dayIndex()%EMO.length;
+  const rs=reviewStreak();
+  const streakLine=rs>0
+    ? `<span class="chip">🔥 разборов подряд <span class="num">${rs}</span></span>`
+    : `<span class="chip">🔥 начни серию разборов сегодня</span>`;
   return `<div class="card"><h2>🧘 Приём дня</h2><p style="font-size:1.05rem">${EMO[i]}</p></div>
-   <div class="card"><h3>Утренняя отметка (10 секунд)</h3>
-    <p class="muted">Вчера получилось сдержать непрошенную/резкую фразу?</p>
-    <div class="seg" id="held">
-      <button data-v="yes">Да 💪</button><button data-v="partly">Частично</button><button data-v="no">Не вышло</button></div>
+   <div class="card"><h2>📝 Разбор вчерашнего дня</h2>
+    <p class="muted">Утром, пока садишься проверять день. 20 секунд по кнопкам — помогает заметить, что мешает, и подправить сегодня.</p>
+    <div class="row" id="revStreak" style="margin:4px 0 2px">${streakLine}</div>
+    ${segRow("studied","📚 Вчера занялась учёбой?",[["yes","Да"],["partly","Чуть"],["no","Нет"]])}
+    ${segRow("block","Что мешало?",[["time","Нет времени"],["forgot","Забыла"],["tired","Устала"],["ok","Всё ок"]])}
+    ${segRow("pushY","💪 Отжимания вчера",[["none","Не делала"],["lo","до 50"],["mid","50–69"],["goal","70+ 🔥"]])}
+    ${segRow("held","🧘 Сдержала резкую фразу?",[["yes","Да 💪"],["partly","Частично"],["no","Не вышло"]])}
     <h3>Настроение</h3><div class="moods" id="mood">
       ${[["1","😣"],["2","🙁"],["3","😐"],["4","🙂"],["5","😄"]].map(([v,e])=>`<button data-v="${v}">${e}</button>`).join("")}</div>
-    <h3>Одна строчка: что со вчера / на что настроишься сегодня</h3>
-    <textarea id="enote" placeholder="по желанию"></textarea>
-    <div style="margin-top:10px"><button class="btn" onclick="saveEmo()">Сохранить отметку</button></div>
+    <h3>✏️ Что сегодня сделаешь иначе? (по желанию)</h3>
+    <textarea id="enote" placeholder="одна строчка"></textarea>
+    <div style="margin-top:10px"><button class="btn" onclick="saveEmo()">Сохранить разбор</button></div>
     <p id="emsg" class="muted" style="margin-top:8px"></p></div>`;
+}
+// делает группу кнопок «одна выбранная» и подсвечивает сохранённое значение
+function wireSeg(id,val){
+  if(val)document.querySelector(`#${id} button[data-v="${val}"]`)?.classList.add("sel");
+  document.querySelectorAll(`#${id} button`).forEach(b=>b.onclick=()=>{
+    document.querySelectorAll(`#${id} button`).forEach(z=>z.classList.remove("sel"));b.classList.add("sel");});
 }
 function fillEmo(){
   const x=day(isoToday());const e=x.emo||{};
-  if(e.held)document.querySelector(`#held button[data-v="${e.held}"]`)?.classList.add("sel");
-  if(e.mood)document.querySelector(`#mood button[data-v="${e.mood}"]`)?.classList.add("sel");
+  wireSeg("studied",e.studied);
+  wireSeg("block",e.block);
+  wireSeg("pushY",e.pushY);
+  wireSeg("held",e.held);
+  wireSeg("mood",e.mood);
   if(e.note)document.getElementById("enote").value=e.note;
-  document.querySelectorAll("#held button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#held button").forEach(z=>z.classList.remove("sel"));b.classList.add("sel");});
-  document.querySelectorAll("#mood button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#mood button").forEach(z=>z.classList.remove("sel"));b.classList.add("sel");});
 }
 function saveEmo(){
   const x=day(isoToday());
-  const held=document.querySelector("#held button.sel")?.dataset.v||null;
-  const mood=document.querySelector("#mood button.sel")?.dataset.v||null;
+  const pick=id=>document.querySelector(`#${id} button.sel`)?.dataset.v||null;
+  const studied=pick("studied"), block=pick("block"), pushY=pick("pushY");
+  const held=pick("held"), mood=pick("mood");
   const note=document.getElementById("enote").value.trim();
-  x.emo={held,mood,note};x.emotions=true;save();renderHeader();
-  document.getElementById("emsg").innerHTML='<span class="ok">Сохранено. Отметка засчитана — это и есть тренировка. ✓</span>';
+  x.emo={studied,block,pushY,held,mood,note};x.emotions=true;save();renderHeader();
+  const rs=reviewStreak();
+  const rsLine=rs>0?`<span class="chip">🔥 разборов подряд <span class="num">${rs}</span></span>`:"";
+  const rsBox=document.getElementById("revStreak"); if(rsBox&&rsLine)rsBox.innerHTML=rsLine;
+  const msg=studied
+    ? 'Разбор сохранён. Серия разборов засчитана! 🔥'
+    : 'Сохранено. Отметь «Вчера занялась учёбой?» — тогда засчитается серия разборов.';
+  document.getElementById("emsg").innerHTML='<span class="ok">'+msg+'</span>';
 }
 
 /* ---- ИТОГИ НЕДЕЛИ ---- */
@@ -560,9 +596,11 @@ function tWeek(){
   const done14=lastN(14).filter(d=>isComplete(d)).length;
   const lastMax=S.pushupMax||"—";
   const heldYes=lastN(14).filter(d=>S.days[d]&&S.days[d].emo&&S.days[d].emo.held==="yes").length;
+  const rs=reviewStreak();
   return `<div class="card"><h2>📊 Итоги</h2>
     <div class="row">
       <span class="chip">🔥 серия <span class="num">${st.streak}</span></span>
+      <span class="chip">📝 разборов подряд <span class="num">${rs}</span></span>
       <span class="chip">✅ дней за 2 недели <span class="num">${done14}</span></span>
       <span class="chip">💪 максимум <span class="num">${lastMax}</span></span>
       <span class="chip">📡 морзе решено <span class="num">${S.morseSolved}</span></span>
