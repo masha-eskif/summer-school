@@ -1,5 +1,5 @@
 /* =========================================================================
-   Лето с Машей — основная логика
+   Учебный сайт Маши — основная логика
    =========================================================================
    Загружает PROGRAM, SAILING, BONUSES из data.js.
    Состояние сохраняется в localStorage под ключом 'summer-school-state'.
@@ -311,7 +311,7 @@ function renderHeader() {
   else progressStr = `Неделя ${info.weekIdx + 1}, день ${info.dayNum} из 5`;
 
   document.getElementById('header-info').innerHTML = `
-    <h1>⛵ Летнее обучение — Маша</h1>
+    <h1>⛵ Учёба — Маша</h1>
     <div class="sub">${todayStr} · ${progressStr}</div>
   `;
 }
@@ -769,10 +769,11 @@ function checkAllVocab(words) {
 }
 
 function randomBonus() {
-  const kinds = ['joke', 'quote', 'medal'];
+  const kinds = ['joke', 'quote', 'medal', 'fact'];
   const kind = kinds[Math.floor(Math.random() * kinds.length)];
   if (kind === 'joke') return { bonusType: 'анекдот', bonusText: BONUSES.jokes[Math.floor(Math.random() * BONUSES.jokes.length)] };
   if (kind === 'quote') return { bonusType: 'цитата', bonusText: BONUSES.quotes[Math.floor(Math.random() * BONUSES.quotes.length)] };
+  if (kind === 'fact' && BONUSES.facts) return { bonusType: 'интересный факт', bonusText: BONUSES.facts[Math.floor(Math.random() * BONUSES.facts.length)] };
   return { bonusType: 'медалька', bonusText: BONUSES.medals[Math.floor(Math.random() * BONUSES.medals.length)] };
 }
 
